@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  @apply bg-void text-mist font-body font-normal antialiased overflow-x-hidden;
+  cursor: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Orbitron: headings and display titles (wght 980 — clamps to 900 on this family) */
+@layer components {
+  .font-display {
+    font-weight: 980;
+  }
+
+  /* Syne 400: body copy; `font-medium` / `font-semibold` utilities still override when needed */
+  .font-body {
+    @apply font-normal;
+  }
+
+  /* Sentence-case subtext under titles (roles, dates, meta) */
+  .font-subtext {
+    @apply font-body font-normal;
+  }
+}
+
+@media (pointer: coarse) {
+  body {
+    cursor: auto;
+  }
+}
+
+.snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* White glow + subtle neon navy lift from bottom-left */
+.bloom-bottom-left {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  background:
+    radial-gradient(
+      ellipse 120% 95% at 0% 100%,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(120, 160, 220, 0.06) 28%,
+      rgba(255, 255, 255, 0.03) 48%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 5% 98%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      38deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(8, 20, 45, 0.4) 38%,
+      transparent 52%
+    );
+  mix-blend-mode: soft-light;
+}
+
+/* Certificates headline — stroke ghosts fade toward solid “CERTIFICATES” (no hard clip) */
+.cert-stroke-edge {
+  position: relative;
+  display: inline-block;
+  line-height: 0.92;
+}
+
+.cert-stroke-edge__stroke {
+  position: absolute;
+  left: 50%;
+  white-space: nowrap;
+  -webkit-text-stroke: 0.48px rgba(255, 255, 255, 0.78);
+  color: transparent;
+  paint-order: stroke fill;
+  pointer-events: none;
+  z-index: 0;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+/* Upper ghost: mask alpha sequence 0.52 → 0.35 → 0.29 → 0.11 → 0.3 → 0.028 → … → transparent */
+.cert-stroke-edge__stroke--top {
+  bottom: calc(100% - 0.04em);
+  transform: translate(-50%, -0.07em);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 1.2%,
+    rgba(0, 0, 0, 0.52) 6%,
+    rgba(0, 0, 0, 0.35) 14%,
+    rgba(0, 0, 0, 0.29) 22%,
+    rgba(0, 0, 0, 0.11) 32%,
+    rgba(0, 0, 0, 0.3) 42%,
+    rgba(0, 0, 0, 0.028) 52%,
+    rgba(0, 0, 0, 0.016) 62%,
+    rgba(0, 0, 0, 0.009) 72%,
+    rgba(0, 0, 0, 0.0045) 80%,
+    rgba(0, 0, 0, 0.002) 88%,
+    rgba(0, 0, 0, 0.0008) 94%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 1.2%,
+    rgba(0, 0, 0, 0.52) 6%,
+    rgba(0, 0, 0, 0.35) 14%,
+    rgba(0, 0, 0, 0.29) 22%,
+    rgba(0, 0, 0, 0.11) 32%,
+    rgba(0, 0, 0, 0.3) 42%,
+    rgba(0, 0, 0, 0.028) 52%,
+    rgba(0, 0, 0, 0.016) 62%,
+    rgba(0, 0, 0, 0.009) 72%,
+    rgba(0, 0, 0, 0.0045) 80%,
+    rgba(0, 0, 0, 0.002) 88%,
+    rgba(0, 0, 0, 0.0008) 94%,
+    transparent 100%
+  );
+}
+
+/* Lower ghost: same curve, reversed (soft near main text → strong at outer edge) */
+.cert-stroke-edge__stroke--bottom {
+  top: calc(100% - 0.04em);
+  transform: translate(-50%, 0.07em);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.0008) 6%,
+    rgba(0, 0, 0, 0.002) 12%,
+    rgba(0, 0, 0, 0.0045) 20%,
+    rgba(0, 0, 0, 0.009) 28%,
+    rgba(0, 0, 0, 0.016) 38%,
+    rgba(0, 0, 0, 0.028) 48%,
+    rgba(0, 0, 0, 0.3) 58%,
+    rgba(0, 0, 0, 0.11) 68%,
+    rgba(0, 0, 0, 0.29) 76%,
+    rgba(0, 0, 0, 0.35) 84%,
+    rgba(0, 0, 0, 0.52) 91%,
+    #000 97%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.0008) 6%,
+    rgba(0, 0, 0, 0.002) 12%,
+    rgba(0, 0, 0, 0.0045) 20%,
+    rgba(0, 0, 0, 0.009) 28%,
+    rgba(0, 0, 0, 0.016) 38%,
+    rgba(0, 0, 0, 0.028) 48%,
+    rgba(0, 0, 0, 0.3) 58%,
+    rgba(0, 0, 0, 0.11) 68%,
+    rgba(0, 0, 0, 0.29) 76%,
+    rgba(0, 0, 0, 0.35) 84%,
+    rgba(0, 0, 0, 0.52) 91%,
+    #000 97%,
+    #000 100%
+  );
+}
+
+.cert-stroke-edge__main {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+@keyframes hackathon-scanlines {
+  to {
+    background-position: 0 4px;
+  }
+}

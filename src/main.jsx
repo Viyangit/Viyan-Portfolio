@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import Portfolio from "./Portfolio.jsx";
 import AboutPage from "./AboutPage.jsx";
+import BlobCursor from "./BlobCursor.jsx";
 import "./index.css";
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
@@ -50,7 +51,14 @@ function mountReact(container, namespace) {
   unmountReact();
   reactRoot = ReactDOM.createRoot(el);
   const page = namespace === "about" ? <AboutPage /> : <Portfolio />;
-  reactRoot.render(<React.StrictMode>{page}</React.StrictMode>);
+  reactRoot.render(
+    <React.StrictMode>
+      <>
+        <BlobCursor />
+        {page}
+      </>
+    </React.StrictMode>
+  );
 }
 
 function fadeElement(el, from, to, duration) {

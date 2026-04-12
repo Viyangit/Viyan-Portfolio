@@ -365,11 +365,40 @@ export default function Projects3DGallery({ projects, className = "", wheelRootR
   useEffect(() => {
     const el = wheelRootRef?.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => {
-      setSectionVisible(!!e?.isIntersecting);
-    });
+    let hideTimer;
+    const clearHide = () => {
+      if (hideTimer != null) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+    };
+
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e) return;
+        const ratio = e.intersectionRatio;
+        // Debounce leaving the section: Lenis + subpixel IO causes rapid
+        // isIntersecting flips at the internships/projects seam (flicker).
+        if (e.isIntersecting && ratio >= 0.04) {
+          clearHide();
+          setSectionVisible(true);
+          return;
+        }
+        if (!hideTimer) {
+          hideTimer = setTimeout(() => {
+            hideTimer = null;
+            setSectionVisible(false);
+          }, 180);
+        }
+      },
+      { threshold: [0, 0.01, 0.02, 0.04, 0.08, 0.12, 0.2, 0.35, 0.5, 0.75, 1] }
+    );
+
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      clearHide();
+      io.disconnect();
+    };
   }, [wheelRootRef]);
 
   useEffect(() => {

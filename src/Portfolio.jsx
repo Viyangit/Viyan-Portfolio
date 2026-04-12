@@ -12,7 +12,6 @@ import {
 } from "framer-motion";
 import { GlobalEtherealBackdrop } from "@/components/ui/etheral-shadow";
 import { DotLoader, DOT_LOADER_FRAMES } from "./DotLoader.jsx";
-import { CustomCursor } from "./CustomCursor.jsx";
 import { HackathonGlitchDeck } from "./HackathonGlitchDeck.jsx";
 import { CertificatesSplitScroll } from "./CertificatesSplitScroll.jsx";
 import Projects3DGallery from "./components/ui/Projects3DGallery.jsx";
@@ -418,19 +417,71 @@ function IconDownload({ className }) {
 /*                           Hooks & utilities                                 */
 /* -------------------------------------------------------------------------- */
 
-function useInView(options) {
+function useInView(options = {}) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
+  const hideTimerRef = useRef(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    const rootMargin = options.rootMargin ?? "0px";
+    const stabilize = options.stabilize === true;
+    const hideDelayMs = options.hideDelayMs ?? 150;
+    const thresholdOpt = options.threshold ?? 0.15;
+    const singleT = typeof thresholdOpt === "number" ? thresholdOpt : 0.15;
+
+    const clearHide = () => {
+      if (hideTimerRef.current != null) {
+        clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    };
+
+    const thresholds = Array.isArray(thresholdOpt)
+      ? thresholdOpt
+      : stabilize
+        ? [0, 0.02, 0.04, singleT * 0.5, singleT * 0.72, singleT, Math.min(1, singleT * 1.4), 0.2, 0.35, 0.5, 0.75, 1]
+        : [singleT];
+
+    const sorted = [...new Set(thresholds.map((t) => Math.min(1, Math.max(0, t))))].sort((a, b) => a - b);
+
     const obs = new IntersectionObserver(
-      ([e]) => setInView(e.isIntersecting),
-      { threshold: options?.threshold ?? 0.15, rootMargin: options?.rootMargin ?? "0px" }
+      (entries) => {
+        const e = entries[0];
+        if (!e) return;
+
+        if (stabilize) {
+          const r = e.intersectionRatio;
+          const enterAt = Math.max(0.04, singleT * 0.65);
+          const exitBelow = Math.max(0.02, singleT * 0.38);
+
+          if (e.isIntersecting && r >= enterAt) {
+            clearHide();
+            setInView(true);
+          } else if (!e.isIntersecting || r < exitBelow) {
+            if (hideTimerRef.current == null) {
+              hideTimerRef.current = setTimeout(() => {
+                hideTimerRef.current = null;
+                setInView(false);
+              }, hideDelayMs);
+            }
+          }
+        } else {
+          setInView(e.isIntersecting);
+        }
+      },
+      { rootMargin, threshold: sorted.length ? sorted : [0] }
     );
+
     obs.observe(el);
-    return () => obs.disconnect();
-  }, [options?.threshold, options?.rootMargin]);
+    return () => {
+      clearHide();
+      obs.disconnect();
+    };
+  }, [options.threshold, options.rootMargin, options.stabilize, options.hideDelayMs]);
+
   return [ref, inView];
 }
 
@@ -563,7 +614,7 @@ function SectionHackathons() {
 const INTERNSHIPS_HANDOFF_PROGRESS = 0.86;
 
 function SectionInternships({ projectsRef, introReady }) {
-  const [sectionRef, inView] = useInView({ threshold: 0.08 });
+  const [sectionRef, inView] = useInView({ threshold: 0.1, stabilize: true, hideDelayMs: 160 });
   const jobsByDate = useMemo(
     () => [...INTERNSHIPS].sort((a, b) => a.start.localeCompare(b.start)),
     []
@@ -1099,8 +1150,6 @@ export default function Portfolio() {
     <LazyMotion features={domAnimation} strict>
       <div className="min-h-screen bg-void selection:bg-white/20 selection:text-void">
         <GlobalEtherealBackdrop />
-
-        <CustomCursor />
 
         <AnimatePresence>
           {!introReady && (

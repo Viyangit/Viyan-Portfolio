@@ -10,7 +10,7 @@ import {
   useSpring,
   useMotionValueEvent,
 } from "framer-motion";
-import { EtherealSectionBackdrop } from "./EtherealShadow.jsx";
+import { GlobalEtherealBackdrop } from "@/components/ui/etheral-shadow";
 import { DotLoader, DOT_LOADER_FRAMES } from "./DotLoader.jsx";
 import { CustomCursor } from "./CustomCursor.jsx";
 import { HackathonGlitchDeck } from "./HackathonGlitchDeck.jsx";
@@ -499,7 +499,6 @@ function SectionHero({ heroRef, scrollExplode, startHero }) {
       ref={heroRef}
       className="relative flex min-h-screen snap-section flex-col items-center justify-center overflow-hidden px-4"
     >
-      <EtherealSectionBackdrop />
       <div className="relative z-10 grid w-full max-w-6xl grid-cols-2 gap-8 md:grid-cols-4 md:gap-4">
         {[0, 1, 2, 3].map((i) => (
           <HeroStatDigit
@@ -524,7 +523,6 @@ function SectionHackathons() {
   const [ref, inView] = useInView({ threshold: 0.12 });
   return (
     <section ref={ref} className="relative snap-section overflow-hidden px-4 py-28 md:px-10" aria-label="Hackathons">
-      <EtherealSectionBackdrop />
       <div className="relative z-10 mx-auto max-w-5xl">
         <m.h2
           initial={{ opacity: 0, y: 24 }}
@@ -570,7 +568,6 @@ function SectionInternships() {
       className="relative snap-section overflow-hidden px-4 py-28 md:px-10"
       style={{ perspective: "1000px" }}
     >
-      <EtherealSectionBackdrop />
       <div className="relative z-10 mx-auto max-w-3xl">
         <m.h2
           initial={{ opacity: 0, y: 20 }}
@@ -756,7 +753,6 @@ function SectionProjects({ containerRef }) {
 
   return (
     <section ref={containerRef} className="relative min-h-screen snap-section overflow-hidden">
-      <EtherealSectionBackdrop />
       <div className="relative z-10 flex min-h-screen flex-col justify-center overflow-hidden py-10">
         <h2
           className="pointer-events-none absolute left-6 top-10 z-20 font-display text-5xl tracking-tight text-white/95 md:left-12 md:text-7xl"
@@ -849,7 +845,6 @@ function SkillGridOverlay({ category, onClose, sentinelRef }) {
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-0 z-[80] flex origin-center flex-col items-center overflow-y-auto bg-void/75 px-4 py-24 backdrop-blur-md"
     >
-      <EtherealSectionBackdrop />
       <button
         type="button"
         onClick={onClose}
@@ -941,7 +936,6 @@ function SectionSkills() {
 
   return (
     <section className="relative min-h-screen snap-section overflow-hidden px-4 py-32 md:px-10">
-      <EtherealSectionBackdrop />
       <div className="relative z-10 mx-auto max-w-4xl text-center">
         <h2 className="mb-6 font-display text-5xl tracking-tight text-white md:text-7xl">
           Skills
@@ -1019,7 +1013,6 @@ function SectionWhoAmI() {
 
   return (
     <section ref={whoRef} className="relative min-h-[140vh] snap-section overflow-hidden px-4 py-32 md:px-10">
-      <EtherealSectionBackdrop />
       <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center">
         <AnimatePresence mode="wait">
           {phase < 2 && (
@@ -1114,7 +1107,6 @@ function SectionContact() {
 
   return (
     <section ref={ref} className="relative snap-section overflow-hidden pb-32 pt-20 md:px-10">
-      <EtherealSectionBackdrop />
       <div className="relative z-10 mx-auto max-w-5xl px-4">
         <m.h2
           initial={{ opacity: 0, y: 16 }}
@@ -1217,7 +1209,7 @@ export default function Portfolio() {
   return (
     <LazyMotion features={domAnimation} strict>
       <div className="min-h-screen bg-void selection:bg-white/20 selection:text-void">
-        <div className="bloom-bottom-left" aria-hidden />
+        <GlobalEtherealBackdrop />
 
         <CustomCursor />
 
@@ -1270,7 +1262,6 @@ export default function Portfolio() {
           <SectionContact />
 
           <footer className="relative overflow-hidden border-t border-white/5 py-10 text-center font-sub text-xs text-mist/35">
-            <EtherealSectionBackdrop />
             <p className="relative z-10">
               © {new Date().getFullYear()} {CONTACT.name} · React, Framer Motion, Barba.js & Lenis
             </p>

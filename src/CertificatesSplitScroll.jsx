@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from "react";
-import { EtherealSectionBackdrop } from "./EtherealShadow.jsx";
 import ConfettiBackground from "./components/ui/ConfettiBackground.jsx";
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -265,10 +264,6 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
   return (
     <section ref={containerRef} className="relative min-h-screen snap-section overflow-hidden bg-void" aria-label="Certificates">
       <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-void">
-        <div className="pointer-events-none absolute inset-0 z-0">
-          <EtherealSectionBackdrop />
-        </div>
-
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
           <ConfettiBackground />
         </div>

@@ -1,10 +1,11 @@
 import React from "react";
 import { CustomCursor } from "./CustomCursor.jsx";
+import { GlobalEtherealBackdrop } from "@/components/ui/etheral-shadow";
 
 export default function AboutPage() {
   return (
     <div className="relative min-h-screen bg-void text-mist">
-      <div className="bloom-bottom-left" aria-hidden />
+      <GlobalEtherealBackdrop />
       <CustomCursor />
       <header className="relative z-20 flex items-center justify-between px-6 py-8 md:px-10">
         <a

@@ -4,6 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        foreground: "#f4f4f5",
         void: "#000000",
         navy: "#060a12",
         "navy-neon": "#0a1426",

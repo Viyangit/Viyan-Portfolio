@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense } from "react";
 import {
   LazyMotion,
   domAnimation,
@@ -15,6 +15,8 @@ import { DotLoader, DOT_LOADER_FRAMES } from "./DotLoader.jsx";
 import { CustomCursor } from "./CustomCursor.jsx";
 import { HackathonGlitchDeck } from "./HackathonGlitchDeck.jsx";
 import { CertificatesSplitScroll } from "./CertificatesSplitScroll.jsx";
+import Projects3DGallery from "./components/ui/Projects3DGallery.jsx";
+import ScrollVelocityLogoLoop from "./components/ui/ScrollVelocityLogoLoop.jsx";
 
 /* -------------------------------------------------------------------------- */
 /*                              Motion variants                                */
@@ -240,6 +242,15 @@ const PROJECTS = [
       "Farmer–logistics marketplace with seasonal cost prediction using generative models.",
     gh: "github.com/viyan/farm-easy",
   },
+];
+
+/** Stable textures for the 3D project tunnel (Picsum seeds). */
+const PROJECT_GALLERY_TEXTURES = [
+  "https://picsum.photos/seed/viyan-envision/960/720",
+  "https://picsum.photos/seed/viyan-tmap/960/720",
+  "https://picsum.photos/seed/viyan-bvs/960/720",
+  "https://picsum.photos/seed/viyan-transport/960/720",
+  "https://picsum.photos/seed/viyan-farmeasy/960/720",
 ];
 
 const SKILL_GROUPS = {
@@ -548,7 +559,10 @@ function SectionHackathons() {
   );
 }
 
-function SectionInternships() {
+/** When internships scroll progress passes this (downward), Lenis eases into the Projects section. */
+const INTERNSHIPS_HANDOFF_PROGRESS = 0.86;
+
+function SectionInternships({ projectsRef, introReady }) {
   const [sectionRef, inView] = useInView({ threshold: 0.08 });
   const jobsByDate = useMemo(
     () => [...INTERNSHIPS].sort((a, b) => a.start.localeCompare(b.start)),
@@ -561,6 +575,28 @@ function SectionInternships() {
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 72, damping: 28, mass: 0.45 });
   const lineScale = useTransform(smoothProgress, [0, 1], [0, 1]);
   const dotY = useTransform(smoothProgress, [0, 1], ["0%", "100%"]);
+
+  const prevProgressRef = useRef(0);
+  const hasHandedOffRef = useRef(false);
+
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if (v < 0.28) hasHandedOffRef.current = false;
+    if (!introReady) return;
+    const prev = prevProgressRef.current;
+    prevProgressRef.current = v;
+    const goingDown = v > prev;
+    if (!goingDown || hasHandedOffRef.current) return;
+    if (v < INTERNSHIPS_HANDOFF_PROGRESS) return;
+    const el = projectsRef?.current;
+    const lenis = typeof window !== "undefined" ? window.__lenis : null;
+    if (!el || !lenis) return;
+    hasHandedOffRef.current = true;
+    lenis.scrollTo(el, {
+      duration: 1.12,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      offset: 0,
+    });
+  });
 
   return (
     <section
@@ -615,197 +651,41 @@ function SectionInternships() {
   );
 }
 
-const PROJECT_SCROLL_SENS = 0.00075;
-/** Section top must reach this offset before wheel drives horizontal (stops progress racing while still scrolling the page). */
-const PROJECT_PIN_TOP_PX = 20;
-
-function isProjectsPinned(rect) {
-  return rect.top <= PROJECT_PIN_TOP_PX && rect.bottom > PROJECT_PIN_TOP_PX;
-}
-
-function syncProjectCarouselVerticalLock(progress, containerRef) {
-  if (typeof window === "undefined") return;
-  const el = containerRef.current;
-  if (!el) {
-    window.__projectCarouselLocksVertical = false;
-    return;
-  }
-  const rect = el.getBoundingClientRect();
-  const pinned = isProjectsPinned(rect);
-  const p = progress.get();
-  const next = pinned && p < 1;
-  const prev = window.__projectCarouselLocksVertical === true;
-  window.__projectCarouselLocksVertical = next;
-  if (next && !prev && window.__lenis?.reset) window.__lenis.reset();
-}
-
 function SectionProjects({ containerRef }) {
-  const progress = useMotionValue(0);
-  const x = useTransform(progress, [0, 0.72], ["0%", "-62%"]);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) {
-          progress.set(0);
-          syncProjectCarouselVerticalLock(progress, containerRef);
-        }
-      },
-      { threshold: 0 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [progress, containerRef]);
-
-  useEffect(() => {
-    const sync = () => syncProjectCarouselVerticalLock(progress, containerRef);
-    sync();
-    const unsub = progress.on("change", sync);
-    window.addEventListener("scroll", sync, { passive: true });
-    window.addEventListener("resize", sync);
-    return () => {
-      unsub();
-      window.removeEventListener("scroll", sync);
-      window.removeEventListener("resize", sync);
-      if (typeof window !== "undefined") window.__projectCarouselLocksVertical = false;
-    };
-  }, [progress, containerRef]);
-
-  const applyScrollDelta = useCallback(
-    (deltaY) => {
-      try {
-        const el = containerRef.current;
-        if (!el) return false;
-        const rect = el.getBoundingClientRect();
-        const p = progress.get();
-        const pinned = isProjectsPinned(rect);
-
-        // Section not intersecting the viewport — page scroll only
-        if (rect.bottom < 0 || rect.top > window.innerHeight) return false;
-
-        // Scroll down: horizontal scrubs first, but only after the section is pinned (no accidental advance while approaching)
-        if (deltaY > 0 && p < 1) {
-          if (!pinned) return false;
-          const next = Math.max(0, Math.min(1, p + deltaY * PROJECT_SCROLL_SENS));
-          progress.set(next);
-          return true;
-        }
-
-        // Scroll up at start of track — page scroll only
-        if (p === 0 && deltaY < 0) return false;
-
-        // Horizontal finished — allow vertical scroll down to next section
-        if (p >= 1 && deltaY > 0) return false;
-
-        // Scroll up while in track — rewind horizontal without vertical scroll (same pin rule)
-        if (deltaY < 0 && p > 0) {
-          if (!pinned) return false;
-          const next = Math.max(0, Math.min(1, p + deltaY * PROJECT_SCROLL_SENS));
-          progress.set(next);
-          return true;
-        }
-
-        return false;
-      } finally {
-        syncProjectCarouselVerticalLock(progress, containerRef);
-      }
-    },
-    [progress, containerRef]
+  const galleryProjects = useMemo(
+    () =>
+      PROJECTS.map((p, i) => ({
+        ...p,
+        src: PROJECT_GALLERY_TEXTURES[i] ?? PROJECT_GALLERY_TEXTURES[0],
+      })),
+    []
   );
 
-  useEffect(() => {
-    const onWheel = (e) => {
-      const dy = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      const consumed = applyScrollDelta(dy);
-      if (consumed) e.preventDefault();
-    };
-
-    let lastTouchY = null;
-    const onTouchStart = (e) => {
-      if (e.touches.length === 1) lastTouchY = e.touches[0].clientY;
-    };
-    const onTouchMove = (e) => {
-      if (e.touches.length !== 1 || lastTouchY === null) return;
-      const y = e.touches[0].clientY;
-      const deltaY = lastTouchY - y;
-      lastTouchY = y;
-      const consumed = applyScrollDelta(deltaY * 1.2);
-      if (consumed) e.preventDefault();
-    };
-    const onTouchEnd = () => {
-      lastTouchY = null;
-    };
-
-    window.addEventListener("wheel", onWheel, { passive: false, capture: true });
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
-    window.addEventListener("touchend", onTouchEnd);
-
-    return () => {
-      window.removeEventListener("wheel", onWheel, { capture: true });
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [applyScrollDelta]);
-
   return (
-    <section ref={containerRef} className="relative min-h-screen snap-section overflow-hidden">
-      <div className="relative z-10 flex min-h-screen flex-col justify-center overflow-hidden py-10">
-        <h2
-          className="pointer-events-none absolute left-6 top-10 z-20 font-display text-5xl tracking-tight text-white/95 md:left-12 md:text-7xl"
+    <section
+      ref={containerRef}
+      data-projects-scroll-gate=""
+      className="relative min-h-screen snap-section overflow-hidden bg-void"
+    >
+      <h2 className="pointer-events-none absolute left-6 top-8 z-20 font-display text-5xl tracking-tight text-white/95 md:left-12 md:top-10 md:text-7xl">
+        Projects
+      </h2>
+      <div className="relative h-[min(92vh,900px)] w-full pt-24 md:pt-32">
+        <Suspense
+          fallback={
+            <div className="flex h-full items-center justify-center font-sub text-sm text-mist/50">
+              Loading 3D workspace…
+            </div>
+          }
         >
-          Projects
-        </h2>
-        <m.div style={{ x }} className="flex w-max gap-8 pl-6 pr-[40vw] pt-20 will-change-transform md:pl-12">
-          {PROJECTS.map((p, i) => (
-            <ProjectCard key={p.name} project={p} index={i} progress={progress} />
-          ))}
-        </m.div>
+          <Projects3DGallery
+            projects={galleryProjects}
+            wheelRootRef={containerRef}
+            className="h-full w-full"
+          />
+        </Suspense>
       </div>
     </section>
-  );
-}
-
-function ProjectCard({ project, index, progress }) {
-  const xOff = useTransform(progress, (v) => {
-    if (v < 0.72) return 0;
-    const local = (v - 0.72) / 0.28;
-    const stagger = index * 0.07;
-    if (local < stagger) return 0;
-    const t = Math.min(1, (local - stagger) / 0.35);
-    return -220 * t - index * 26;
-  });
-  const op = useTransform(progress, (v) => {
-    if (v < 0.72) return 1;
-    const local = (v - 0.72) / 0.28;
-    const stagger = index * 0.065;
-    if (local < stagger * 0.85) return 1;
-    const t = Math.min(1, (local - stagger * 0.85) / 0.28);
-    return 1 - t;
-  });
-
-  return (
-    <m.article
-      style={{ x: xOff, opacity: op, willChange: "transform, opacity" }}
-      className="relative h-[420px] w-[min(88vw,380px)] shrink-0 rounded-3xl border border-white/20 bg-white/[0.06] p-8 shadow-2xl backdrop-blur-xl"
-    >
-      <p className="font-sub text-xs uppercase tracking-widest text-white/90">{project.client}</p>
-      <h3 className="mt-2 font-display text-4xl text-mist">
-        {project.name}
-      </h3>
-      <p className="mt-2 font-subtext text-sm text-mist/45">{project.year}</p>
-      <p className="mt-6 font-body text-sm leading-relaxed text-mist/75">{project.desc}</p>
-      <p className="mt-6 font-subtext text-xs text-mist/90">{project.stack}</p>
-      <a
-        href={`https://${project.gh}`}
-        className="mt-8 inline-flex items-center gap-2 font-body text-sm text-mist/60 underline decoration-mist/25 underline-offset-4 hover:text-white"
-      >
-        GitHub — {project.gh}
-      </a>
-    </m.article>
   );
 }
 
@@ -935,7 +815,16 @@ function SectionSkills() {
   }, [active]);
 
   return (
-    <section className="relative min-h-screen snap-section overflow-hidden px-4 py-32 md:px-10">
+    <section className="relative min-h-screen snap-section px-4 pb-32 pt-10 md:px-10 md:pb-40 md:pt-14">
+      {/* Full-bleed to viewport edges: negate section padding (body is overflow-x-hidden). */}
+      <div className="relative z-10 mb-16 md:mb-20 -mx-4 w-[calc(100%+2rem)] max-w-none text-left md:-mx-10 md:w-[calc(100%+5rem)]">
+        <ScrollVelocityLogoLoop
+          text="React · TypeScript · Vite · Motion · Tailwind · Barba · Lenis · Python · OpenCV"
+          velocity={95}
+          logoSpeed={72}
+          fadeColor="#000000"
+        />
+      </div>
       <div className="relative z-10 mx-auto max-w-4xl text-center">
         <h2 className="mb-6 font-display text-5xl tracking-tight text-white md:text-7xl">
           Skills
@@ -1244,7 +1133,7 @@ export default function Portfolio() {
           <SectionHackathons />
 
           {/* ========== SECTION 3 — INTERNSHIPS ========== */}
-          <SectionInternships />
+          <SectionInternships projectsRef={projectsRef} introReady={introReady} />
 
           {/* ========== SECTION 4 — PROJECTS (horizontal scroll) ========== */}
           <SectionProjects containerRef={projectsRef} />

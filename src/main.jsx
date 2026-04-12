@@ -27,10 +27,12 @@ function initLenis() {
     /** While wheel-driven sections scrub, block Lenis from applying vertical smooth scroll. */
     prevent(node) {
       if (typeof window === "undefined") return false;
-      const lock =
-        window.__projectCarouselLocksVertical === true ||
-        window.__certificatesWheelLocksVertical === true;
-      return lock && node instanceof HTMLElement;
+      if (!(node instanceof HTMLElement)) return false;
+      if (window.__certificatesWheelLocksVertical === true) return true;
+      if (window.__projectCarouselLocksVertical === true) {
+        return !!node.closest("[data-projects-scroll-gate]");
+      }
+      return false;
     },
   });
   if (typeof window !== "undefined") window.__lenis = lenis;

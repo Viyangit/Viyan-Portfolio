@@ -503,6 +503,129 @@ function useCounter(target, durationMs, startWhen) {
   return v;
 }
 
+function scrollToSection(targetRef) {
+  const el = targetRef?.current;
+  if (!el) return false;
+  const lenis = typeof window !== "undefined" ? window.__lenis : null;
+  if (lenis?.scrollTo) {
+    lenis.scrollTo(el, {
+      duration: 1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      offset: 0,
+    });
+    return true;
+  }
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  return true;
+}
+
+function TerminalNavigator({ heroRef, internshipsRef, hackathonsRef, skillsRef, certificatesRef }) {
+  const [input, setInput] = useState("");
+  const [pendingChoice, setPendingChoice] = useState(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length);
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const routeTo = useCallback(
+    (section) => {
+      const refs = {
+        home: heroRef,
+        internships: internshipsRef,
+        hackathons: hackathonsRef,
+        skills: skillsRef,
+        certificates: certificatesRef,
+      };
+      const ok = scrollToSection(refs[section]);
+      if (!ok) return;
+    },
+    [heroRef, internshipsRef, hackathonsRef, skillsRef, certificatesRef]
+  );
+
+  const handleCommand = useCallback(
+    (rawValue) => {
+      const raw = rawValue.trim();
+      if (!raw) return;
+      const value = raw.toLowerCase();
+
+      if (pendingChoice === "hackathonOrCertificates") {
+        if (/(hackathons?|hackathon)/.test(value)) {
+          routeTo("hackathons");
+        } else if (/(certificates?|certificate|certification|certifications)/.test(value)) {
+          routeTo("certificates");
+        } else {
+          return;
+        }
+        setPendingChoice(null);
+        return;
+      }
+
+      if (/(^|\s)(home|start|main)(\s|$)/.test(value)) {
+        routeTo("home");
+        return;
+      }
+
+      if (/(interships?|internships?|wokr\s*expirence|work\s*experience|experience)/.test(value)) {
+        routeTo("internships");
+        return;
+      }
+
+      if (/(skills?|languages?)/.test(value)) {
+        routeTo("skills");
+        return;
+      }
+
+      if (/(hackathons?|achievements?)/.test(value)) {
+        setPendingChoice("hackathonOrCertificates");
+        return;
+      }
+
+      if (/(certificates?|certifications?)/.test(value)) {
+        routeTo("certificates");
+        return;
+      }
+    },
+    [pendingChoice, routeTo]
+  );
+
+  const onSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      handleCommand(input);
+      setInput("");
+    },
+    [handleCommand, input]
+  );
+
+  return (
+    <div className="terminal-nav-wrap">
+      <form onSubmit={onSubmit} className="terminal-nav" aria-label="Terminal section navigation">
+        <label className="terminal-nav-label" htmlFor="terminal-nav-input">
+          C:\Users\Desktop\viyan-portfolio&gt;
+        </label>
+        <div className="terminal-nav-input-wrap">
+          <input
+            id="terminal-nav-input"
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="terminal-nav-input"
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={pendingChoice ? "hackathons or certificates" : "type command and press Enter"}
+          />
+          <span className="terminal-nav-caret" aria-hidden />
+        </div>
+      </form>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /*                              Sections                                       */
 /* -------------------------------------------------------------------------- */
@@ -581,10 +704,17 @@ function SectionHero({ heroRef, scrollExplode, startHero }) {
   );
 }
 
-function SectionHackathons() {
+function SectionHackathons({ containerRef }) {
   const [ref, inView] = useInView({ threshold: 0.12 });
+  const setRefs = useCallback(
+    (el) => {
+      ref.current = el;
+      if (containerRef) containerRef.current = el;
+    },
+    [ref, containerRef]
+  );
   return (
-    <section ref={ref} className="relative snap-section overflow-hidden px-4 py-28 md:px-10" aria-label="Hackathons">
+    <section ref={setRefs} className="relative snap-section overflow-hidden px-4 py-28 md:px-10" aria-label="Hackathons">
       <div className="relative z-10 mx-auto max-w-5xl">
         <m.h2
           initial={{ opacity: 0, y: 24 }}
@@ -659,8 +789,15 @@ function InternshipTimelineCard({ job, inView, index, revealed }) {
   );
 }
 
-function SectionInternships({ projectsRef, introReady }) {
+function SectionInternships({ containerRef, projectsRef, introReady }) {
   const [sectionRef, inView] = useInView({ threshold: 0.1, stabilize: true, hideDelayMs: 160 });
+  const setRefs = useCallback(
+    (el) => {
+      sectionRef.current = el;
+      if (containerRef) containerRef.current = el;
+    },
+    [sectionRef, containerRef]
+  );
   const jobsByDate = useMemo(
     () => [...INTERNSHIPS].sort((a, b) => a.start.localeCompare(b.start)),
     []
@@ -708,7 +845,7 @@ function SectionInternships({ projectsRef, introReady }) {
 
   return (
     <section
-      ref={sectionRef}
+      ref={setRefs}
       className="relative snap-section overflow-hidden px-4 py-28 md:px-10"
       style={{ perspective: "1000px" }}
     >
@@ -880,10 +1017,16 @@ function SkillTiltSquare({ name }) {
   );
 }
 
-function SectionSkills() {
+function SectionSkills({ containerRef }) {
   const [active, setActive] = useState(null);
   const sentinelRef = useRef(null);
   const wheelAccum = useRef(0);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef) return;
+    containerRef.current = sectionRef.current;
+  }, [containerRef]);
 
   const open = useCallback((cat) => setActive(cat), []);
 
@@ -912,7 +1055,7 @@ function SectionSkills() {
   }, [active]);
 
   return (
-    <section className="relative min-h-screen snap-section px-4 pb-32 pt-10 md:px-10 md:pb-40 md:pt-14">
+    <section ref={sectionRef} className="relative min-h-screen snap-section px-4 pb-32 pt-10 md:px-10 md:pb-40 md:pt-14">
       {/* Full-bleed to viewport edges: negate section padding (body is overflow-x-hidden). */}
       <div className="relative z-10 mb-16 md:mb-20 -mx-4 w-[calc(100%+2rem)] max-w-none text-left md:-mx-10 md:w-[calc(100%+5rem)]">
         <ScrollVelocityLogoLoop
@@ -1169,9 +1312,13 @@ function SectionContact() {
 
 export default function Portfolio() {
   const heroRef = useRef(null);
+  const hackathonsRef = useRef(null);
+  const internshipsRef = useRef(null);
   const projectsRef = useRef(null);
+  const skillsRef = useRef(null);
   const certificatesRef = useRef(null);
   const [introReady, setIntroReady] = useState(false);
+  const [terminalOpen, setTerminalOpen] = useState(false);
 
   useEffect(() => {
     const minMs = 1700;
@@ -1221,20 +1368,48 @@ export default function Portfolio() {
         </AnimatePresence>
 
         <div className="relative z-10">
+          <button
+            type="button"
+            className="terminal-toggle"
+            onClick={() => setTerminalOpen((prev) => !prev)}
+            aria-expanded={terminalOpen}
+            aria-controls="terminal-nav-shell"
+            aria-label={terminalOpen ? "Close terminal navigation" : "Open terminal navigation"}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          {terminalOpen && (
+            <div id="terminal-nav-shell">
+              <TerminalNavigator
+                heroRef={heroRef}
+                internshipsRef={internshipsRef}
+                hackathonsRef={hackathonsRef}
+                skillsRef={skillsRef}
+                certificatesRef={certificatesRef}
+              />
+            </div>
+          )}
           {/* ========== SECTION 1 — HERO ========== */}
           <SectionHero heroRef={heroRef} scrollExplode={heroProg} startHero={introReady} />
 
           {/* ========== SECTION 2 — HACKATHONS ========== */}
-          <SectionHackathons />
+          <SectionHackathons containerRef={hackathonsRef} />
 
           {/* ========== SECTION 3 — INTERNSHIPS ========== */}
-          <SectionInternships projectsRef={projectsRef} introReady={introReady} />
+          <SectionInternships
+            containerRef={internshipsRef}
+            projectsRef={projectsRef}
+            introReady={introReady}
+          />
 
           {/* ========== SECTION 4 — PROJECTS (horizontal scroll) ========== */}
           <SectionProjects containerRef={projectsRef} />
 
           {/* ========== SECTION 5 — SKILLS ========== */}
-          <SectionSkills />
+          <SectionSkills containerRef={skillsRef} />
 
           {/* ========== SECTION 6 — CERTIFICATES (wheel-driven split / reveal) ========== */}
           <SectionCertificates containerRef={certificatesRef} />

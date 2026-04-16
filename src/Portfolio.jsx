@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   LazyMotion,
   domAnimation,
@@ -14,7 +14,7 @@ import { GlobalEtherealBackdrop } from "@/components/ui/etheral-shadow";
 import { DotLoader, DOT_LOADER_FRAMES } from "./DotLoader.jsx";
 import { HackathonGlitchDeck } from "./HackathonGlitchDeck.jsx";
 import { CertificatesSplitScroll } from "./CertificatesSplitScroll.jsx";
-import Projects3DGallery from "./components/ui/Projects3DGallery.jsx";
+import FlowingMenu from "./components/ui/FlowingMenu.jsx";
 import ScrollVelocityLogoLoop from "./components/ui/ScrollVelocityLogoLoop.jsx";
 
 /* -------------------------------------------------------------------------- */
@@ -613,12 +613,66 @@ function SectionHackathons() {
 /** When internships scroll progress passes this (downward), Lenis eases into the Projects section. */
 const INTERNSHIPS_HANDOFF_PROGRESS = 0.86;
 
+function InternshipTimelineCard({ job, inView, index, revealed }) {
+  return (
+    <m.article
+      custom={index}
+      initial="hidden"
+      animate={inView ? "visible" : "hidden"}
+      variants={internshipCardVariants}
+      style={{ perspective: "1000px", willChange: "transform, opacity" }}
+      className="rounded-2xl p-0"
+    >
+      <m.div
+        animate={
+          revealed
+            ? { rotateX: [0, -190, -330, -460, -540], y: [0, -7, 4, -3, 0] }
+            : { rotateX: [-540, -390, -250, -90, 0], y: [0, 6, -4, 2, 0] }
+        }
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        style={{ transformStyle: "preserve-3d", willChange: "transform", minHeight: "220px" }}
+        className="relative h-full w-full"
+      >
+        <div
+          className="absolute inset-0 flex items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-transparent p-6"
+          style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+          aria-hidden={revealed}
+        />
+
+        <div
+          className="absolute inset-0 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-transparent p-6"
+          style={{
+            transform: "rotateX(180deg)",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+          }}
+          aria-hidden={!revealed}
+        >
+          <h3 className="font-display text-3xl text-white">{job.company}</h3>
+          <p className="mt-1 font-sub text-sm text-mist">{job.role}</p>
+          <p className="mt-2 font-sub text-xs uppercase tracking-wider text-mist/45">{job.duration}</p>
+          <p className="mt-4 font-dm text-xs text-mist/50">{job.stack}</p>
+          <p className="mt-3 font-dm text-sm leading-relaxed text-mist/75 line-clamp-3">{job.desc}</p>
+        </div>
+      </m.div>
+    </m.article>
+  );
+}
+
 function SectionInternships({ projectsRef, introReady }) {
   const [sectionRef, inView] = useInView({ threshold: 0.1, stabilize: true, hideDelayMs: 160 });
   const jobsByDate = useMemo(
     () => [...INTERNSHIPS].sort((a, b) => a.start.localeCompare(b.start)),
     []
   );
+  const revealThresholds = useMemo(
+    () => {
+      const preset = [0.13, 0.3, 0.5, 0.64];
+      return jobsByDate.map((_, i) => preset[i] ?? 0.64 + (i - 3) * 0.12);
+    },
+    [jobsByDate]
+  );
+  const [revealedCount, setRevealedCount] = useState(0);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
@@ -631,6 +685,9 @@ function SectionInternships({ projectsRef, introReady }) {
   const hasHandedOffRef = useRef(false);
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
+    const nextCount = revealThresholds.reduce((count, threshold) => count + (v >= threshold ? 1 : 0), 0);
+    setRevealedCount((prev) => (prev === nextCount ? prev : nextCount));
+
     if (v < 0.28) hasHandedOffRef.current = false;
     if (!introReady) return;
     const prev = prevProgressRef.current;
@@ -676,25 +733,15 @@ function SectionInternships({ projectsRef, introReady }) {
             />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {jobsByDate.map((job, i) => (
-            <m.article
-              key={job.company}
-              custom={i}
-              initial="hidden"
-              animate={inView ? "visible" : "hidden"}
-              variants={internshipCardVariants}
-              style={{ transformStyle: "preserve-3d", willChange: "transform, opacity" }}
-              className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-transparent p-6"
-            >
-              <h3 className="font-display text-3xl text-white">
-                {job.company}
-              </h3>
-              <p className="mt-1 font-sub text-sm text-mist">{job.role}</p>
-              <p className="mt-2 font-sub text-xs uppercase tracking-wider text-mist/45">{job.duration}</p>
-              <p className="mt-4 font-dm text-xs text-mist/50">{job.stack}</p>
-              <p className="mt-3 font-dm text-sm leading-relaxed text-mist/75 line-clamp-3">{job.desc}</p>
-            </m.article>
-          ))}
+            {jobsByDate.map((job, i) => (
+              <InternshipTimelineCard
+                key={job.company}
+                job={job}
+                index={i}
+                inView={inView}
+                revealed={i < revealedCount}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -703,11 +750,12 @@ function SectionInternships({ projectsRef, introReady }) {
 }
 
 function SectionProjects({ containerRef }) {
-  const galleryProjects = useMemo(
+  const flowingMenuItems = useMemo(
     () =>
       PROJECTS.map((p, i) => ({
-        ...p,
-        src: PROJECT_GALLERY_TEXTURES[i] ?? PROJECT_GALLERY_TEXTURES[0],
+        link: `https://${p.gh}`,
+        text: p.name,
+        image: PROJECT_GALLERY_TEXTURES[i] ?? PROJECT_GALLERY_TEXTURES[0],
       })),
     []
   );
@@ -715,26 +763,24 @@ function SectionProjects({ containerRef }) {
   return (
     <section
       ref={containerRef}
-      data-projects-scroll-gate=""
-      className="relative min-h-screen snap-section overflow-hidden bg-void"
+      className="relative snap-section overflow-hidden bg-void pb-10 md:pb-14"
     >
-      <h2 className="pointer-events-none absolute left-6 top-8 z-20 font-display text-5xl tracking-tight text-white/95 md:left-12 md:top-10 md:text-7xl">
+      <h2 className="pointer-events-none absolute left-6 top-6 z-20 font-display text-5xl tracking-tight text-white/95 md:left-10 md:top-8 md:text-7xl">
         Projects
       </h2>
-      <div className="relative h-[min(92vh,900px)] w-full pt-24 md:pt-32">
-        <Suspense
-          fallback={
-            <div className="flex h-full items-center justify-center font-sub text-sm text-mist/50">
-              Loading 3D workspace…
-            </div>
-          }
-        >
-          <Projects3DGallery
-            projects={galleryProjects}
-            wheelRootRef={containerRef}
-            className="h-full w-full"
+      {/* Full viewport width; shorter than previous 92vh gallery */}
+      <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 pt-[4.5rem] md:pt-24">
+        <div className="relative h-[420px] w-full overflow-hidden border-y border-white/10 shadow-glow-sm">
+          <FlowingMenu
+            items={flowingMenuItems}
+            speed={12}
+            textColor="#ffffff"
+            bgColor="#060a12"
+            marqueeBgColor="#ffffff"
+            marqueeTextColor="#000000"
+            borderColor="rgba(255,255,255,0.18)"
           />
-        </Suspense>
+        </div>
       </div>
     </section>
   );

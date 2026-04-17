@@ -205,7 +205,7 @@ const PROJECTS = [
     year: "2025",
     stack: "Python · OpenCV · JavaScript · Electron",
     desc:
-      "Metallurgy analysis software with industrial cameras — image processing pipelines for quality inspection.",
+      "Built a desktop metallurgy analysis platform that ingests live feeds from industrial cameras and runs computer-vision checks for production quality. The system standardizes inspection workflows, highlights surface and structural defects early, and reduces manual review time by giving operators clear visual outputs and batch-wise analysis summaries.",
     gh: "github.com/viyan/envision",
   },
   {
@@ -213,7 +213,8 @@ const PROJECTS = [
     client: "Sakthi Auto Corp",
     year: "2025",
     stack: "HTML · CSS · JavaScript · PostgreSQL",
-    desc: "Internal audit system with workshift tracking integrated to a Linux server.",
+    desc:
+      "Developed an internal audit management platform with shift-aware tracking for factory operations and compliance activities. It centralizes audit checklists, status updates, and team accountability on a Linux-hosted backend so supervisors can monitor completion progress in real time and close issues with better traceability.",
     gh: "github.com/viyan/t-map",
   },
   {
@@ -221,7 +222,8 @@ const PROJECTS = [
     client: "Robridge Pvt Ltd",
     year: "2025",
     stack: "React · HTML · CSS · Python",
-    desc: "Barcode scanner product with AI-assisted data handling for industrial storage.",
+    desc:
+      "Engineered a barcode workflow system for industrial storage that combines scanner input with AI-assisted data handling to reduce entry errors. The application supports faster item identification, cleaner inventory records, and more reliable movement tracking across warehouse-style storage environments.",
     gh: "github.com/viyan/bvs",
   },
   {
@@ -229,7 +231,8 @@ const PROJECTS = [
     client: "Rajalakshmi Engineering College",
     year: "2025",
     stack: "Python · React · JavaScript · Google Maps",
-    desc: "In-house cab assigning and live driver tracking for staff mobility.",
+    desc:
+      "Created an in-house transport coordination application for assigning cabs and monitoring driver movement in real time. The solution improves route visibility, reduces manual coordination overhead, and helps staff transportation teams manage pickups and trip progress through a single operational dashboard.",
     gh: "github.com/viyan/transport",
   },
   {
@@ -238,7 +241,7 @@ const PROJECTS = [
     year: "2025",
     stack: "Python · React · CSS · Ollama",
     desc:
-      "Farmer–logistics marketplace with seasonal cost prediction using generative models.",
+      "Designed a farmer-logistics marketplace concept that connects producers and transport workflows while adding seasonal cost forecasting support. Using generative model assistance, the platform helps users anticipate pricing fluctuations and make more informed planning decisions for crop movement and delivery timelines.",
     gh: "github.com/viyan/farm-easy",
   },
 ];
@@ -1024,12 +1027,18 @@ function SectionInternships({ containerRef, projectsRef, introReady }) {
 }
 
 function SectionProjects({ containerRef }) {
+  const [openProjectName, setOpenProjectName] = useState(null);
   const flowingMenuItems = useMemo(
     () =>
       PROJECTS.map((p, i) => ({
+        itemId: p.name,
         link: `https://${p.gh}`,
         text: p.name,
         image: PROJECT_GALLERY_TEXTURES[i] ?? PROJECT_GALLERY_TEXTURES[0],
+        year: p.year,
+        client: p.client,
+        desc: p.desc,
+        gh: p.gh,
       })),
     []
   );
@@ -1042,9 +1051,8 @@ function SectionProjects({ containerRef }) {
       <h2 className="pointer-events-none absolute left-6 top-6 z-20 font-display text-5xl tracking-tight text-white/95 md:left-10 md:top-8 md:text-7xl">
         Projects
       </h2>
-      {/* Full viewport width; shorter than previous 92vh gallery */}
       <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 pt-[4.5rem] md:pt-24">
-        <div className="relative h-[420px] w-full overflow-hidden border-y border-white/10 shadow-glow-sm">
+        <div className="relative min-h-[420px] w-full border-y border-white/10 shadow-glow-sm">
           <FlowingMenu
             items={flowingMenuItems}
             speed={12}
@@ -1053,6 +1061,10 @@ function SectionProjects({ containerRef }) {
             marqueeBgColor="#ffffff"
             marqueeTextColor="#000000"
             borderColor="rgba(255,255,255,0.18)"
+            activeItemId={openProjectName}
+            onItemToggle={(itemId) =>
+              setOpenProjectName((prev) => (prev === itemId ? null : itemId))
+            }
           />
         </div>
       </div>

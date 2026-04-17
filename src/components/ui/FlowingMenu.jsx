@@ -11,10 +11,14 @@ function FlowingMenu({
   marqueeBgColor = "#fff",
   marqueeTextColor = "#120F17",
   borderColor = "#fff",
+  activeItemId = null,
+  onItemToggle,
 }) {
+  const isAccordion = typeof onItemToggle === "function";
+
   return (
     <div className="menu-wrap" style={{ backgroundColor: bgColor }}>
-      <nav className="menu">
+      <nav className={`menu ${isAccordion ? "menu--accordion" : ""}`}>
         {items.map((item, idx) => (
           <MenuItem
             key={idx}
@@ -24,6 +28,9 @@ function FlowingMenu({
             marqueeBgColor={marqueeBgColor}
             marqueeTextColor={marqueeTextColor}
             borderColor={borderColor}
+            isOpen={activeItemId === item.itemId}
+            onItemToggle={onItemToggle}
+            isAccordion={isAccordion}
           />
         ))}
       </nav>
@@ -31,7 +38,24 @@ function FlowingMenu({
   );
 }
 
-function MenuItem({ link, text, image, speed, textColor, marqueeBgColor, marqueeTextColor, borderColor }) {
+function MenuItem({
+  link,
+  text,
+  image,
+  speed,
+  textColor,
+  marqueeBgColor,
+  marqueeTextColor,
+  borderColor,
+  itemId,
+  isOpen,
+  onItemToggle,
+  isAccordion,
+  year,
+  client,
+  desc,
+  gh,
+}) {
   const itemRef = useRef(null);
   const marqueeRef = useRef(null);
   const marqueeInnerRef = useRef(null);
@@ -133,18 +157,32 @@ function MenuItem({ link, text, image, speed, textColor, marqueeBgColor, marquee
   const isExternal = typeof link === "string" && /^https?:\/\//i.test(link);
 
   return (
-    <div className="menu__item" ref={itemRef} style={{ borderColor }}>
-      <a
-        className="menu__item-link"
-        href={link}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        style={{ color: textColor }}
-        {...(isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
-        data-barba-prevent={isExternal ? "all" : undefined}
-      >
-        {text}
-      </a>
+    <div className={`menu__item ${isOpen ? "menu__item--open" : ""}`} ref={itemRef} style={{ borderColor }}>
+      {isAccordion ? (
+        <button
+          type="button"
+          className="menu__item-link menu__item-link--button"
+          onClick={() => onItemToggle?.(itemId)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          style={{ color: textColor }}
+          aria-expanded={isOpen}
+        >
+          {text}
+        </button>
+      ) : (
+        <a
+          className="menu__item-link"
+          href={link}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          style={{ color: textColor }}
+          {...(isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
+          data-barba-prevent={isExternal ? "all" : undefined}
+        >
+          {text}
+        </a>
+      )}
       <div className="marquee" ref={marqueeRef} style={{ backgroundColor: marqueeBgColor }}>
         <div className="marquee__inner-wrap">
           <div className="marquee__inner" ref={marqueeInnerRef} aria-hidden="true">
@@ -157,6 +195,35 @@ function MenuItem({ link, text, image, speed, textColor, marqueeBgColor, marquee
           </div>
         </div>
       </div>
+
+      {isAccordion ? (
+        <div className={`menu__item-dropdown ${isOpen ? "menu__item-dropdown--open" : ""}`}>
+          <div className="menu__item-dropdown-grid">
+            <div className="menu__photo-slot">
+              <p className="menu__meta-label font-sub">Photo Space</p>
+              <div className="menu__photo-placeholder">Add project photo here</div>
+            </div>
+            <div className="menu__project-meta">
+              <p className="menu__meta-label font-sub">Client</p>
+              <p className="menu__meta-value font-body">{client}</p>
+              <p className="menu__meta-label font-sub">Year</p>
+              <p className="menu__meta-value font-body">{year}</p>
+              <p className="menu__meta-label font-sub">Project Description</p>
+              <p className="menu__meta-value font-body">{desc}</p>
+              <p className="menu__meta-label font-sub">GitHub</p>
+              <a
+                href={`https://${gh || link?.replace(/^https?:\/\//i, "")}`}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="menu__meta-link font-body"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {gh || link?.replace(/^https?:\/\//i, "")}
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

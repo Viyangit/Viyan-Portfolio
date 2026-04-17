@@ -519,7 +519,25 @@ function scrollToSection(targetRef) {
   return true;
 }
 
-function TerminalNavigator({ heroRef, internshipsRef, hackathonsRef, skillsRef, certificatesRef }) {
+function IconCmdTab({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M4 6h4M4 8.5h6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TerminalNavigator({
+  heroRef,
+  internshipsRef,
+  hackathonsRef,
+  skillsRef,
+  certificatesRef,
+  projectsRef,
+  contactRef,
+  onRequestClose,
+}) {
   const [input, setInput] = useState("");
   const [pendingChoice, setPendingChoice] = useState(null);
   const inputRef = useRef(null);
@@ -540,11 +558,13 @@ function TerminalNavigator({ heroRef, internshipsRef, hackathonsRef, skillsRef, 
         hackathons: hackathonsRef,
         skills: skillsRef,
         certificates: certificatesRef,
+        projects: projectsRef,
+        contact: contactRef,
       };
       const ok = scrollToSection(refs[section]);
       if (!ok) return;
     },
-    [heroRef, internshipsRef, hackathonsRef, skillsRef, certificatesRef]
+    [heroRef, internshipsRef, hackathonsRef, skillsRef, certificatesRef, projectsRef, contactRef]
   );
 
   const handleCommand = useCallback(
@@ -589,6 +609,16 @@ function TerminalNavigator({ heroRef, internshipsRef, hackathonsRef, skillsRef, 
         routeTo("certificates");
         return;
       }
+
+      if (/(projects?|portfolio|apps?|work\s*samples?)/.test(value)) {
+        routeTo("projects");
+        return;
+      }
+
+      if (/(contacts?|get\s*in\s*touch|reach\s*out|email|phone)/.test(value)) {
+        routeTo("contact");
+        return;
+      }
     },
     [pendingChoice, routeTo]
   );
@@ -603,25 +633,66 @@ function TerminalNavigator({ heroRef, internshipsRef, hackathonsRef, skillsRef, 
   );
 
   return (
-    <div className="terminal-nav-wrap">
-      <form onSubmit={onSubmit} className="terminal-nav" aria-label="Terminal section navigation">
-        <label className="terminal-nav-label" htmlFor="terminal-nav-input">
-          C:\Users\Desktop\viyan-portfolio&gt;
-        </label>
-        <div className="terminal-nav-input-wrap">
-          <input
-            id="terminal-nav-input"
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="terminal-nav-input"
-            autoComplete="off"
-            spellCheck={false}
-            placeholder={pendingChoice ? "hackathons or certificates" : "type command and press Enter"}
-          />
-          <span className="terminal-nav-caret" aria-hidden />
+    <div className="cmd-terminal-root" role="dialog" aria-label="Command Prompt navigation">
+      <div className="cmd-terminal__chrome">
+        <div className="cmd-terminal__tab-row">
+          <div className="cmd-terminal__tab cmd-terminal__tab--active">
+            <IconCmdTab className="cmd-terminal__tab-icon" />
+            <span>Command Prompt</span>
+          </div>
+          <button type="button" className="cmd-terminal__tab-action" tabIndex={-1} aria-hidden title="New tab">
+            +
+          </button>
+          <button type="button" className="cmd-terminal__tab-chevron" tabIndex={-1} aria-hidden>
+            <span className="cmd-terminal__chevron-glyph">▾</span>
+          </button>
         </div>
-      </form>
+        <div className="cmd-terminal__window-controls">
+          <span className="cmd-terminal__control-btn" aria-hidden>
+            −
+          </span>
+          <span className="cmd-terminal__control-btn" aria-hidden>
+            □
+          </span>
+          <button
+            type="button"
+            className="cmd-terminal__control-btn cmd-terminal__control-btn--close"
+            onClick={() => onRequestClose?.()}
+            aria-label="Close command prompt"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+      <div className="cmd-terminal__body">
+        <form onSubmit={onSubmit} className="cmd-terminal__form" aria-label="Terminal section navigation">
+          <label className="sr-only" htmlFor="terminal-nav-input">
+            Command line
+          </label>
+          <div className="cmd-terminal__prompt-line">
+            <span className="cmd-terminal__prompt" aria-hidden="true">
+              C:\Users\Acer&gt;
+            </span>
+            <div className="cmd-terminal__input-wrap">
+              <input
+                id="terminal-nav-input"
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="cmd-terminal__input"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder={
+                  pendingChoice
+                    ? "hackathons or certificates"
+                    : "e.g. home · projects · contact · internships · skills"
+                }
+              />
+              <span className="cmd-terminal__caret" aria-hidden />
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -630,11 +701,41 @@ function TerminalNavigator({ heroRef, internshipsRef, hackathonsRef, skillsRef, 
 /*                              Sections                                       */
 /* -------------------------------------------------------------------------- */
 
-function HeroStatDigit({ index, scrollExplode, displayValue, label, showPlus }) {
-  const x = useTransform(scrollExplode, [0, 0.55], [0, (index - 1.5) * 140]);
-  const y = useTransform(scrollExplode, [0, 0.55], [0, (index % 2 === 0 ? 1 : -1) * 95]);
-  const opacity = useTransform(scrollExplode, [0.02, 0.42], [1, 0]);
-  const scale = useTransform(scrollExplode, [0, 0.45], [1, 1.35]);
+/** First ~30% of hero scroll: digits stay locked; after that, parallax / drift kicks in. */
+const HERO_STATS_HOLD_END = 0.3;
+const HERO_STATS_PARALLAX_END = 0.58;
+
+function HeroStatDigit({
+  index,
+  scrollExplode,
+  displayValue,
+  label,
+  showPlus,
+  numberClassName = "font-display text-[clamp(6rem,24vw,14rem)] leading-none tracking-[-0.04em] text-white",
+  labelClassName = "mt-4 max-w-[10rem] font-sub text-xs uppercase tracking-[0.2em] text-mist/55 md:text-sm",
+}) {
+  const driftX = (index - 1.5) * 140;
+  const driftY = (index % 2 === 0 ? 1 : -1) * 95;
+  const x = useTransform(
+    scrollExplode,
+    [0, HERO_STATS_HOLD_END, HERO_STATS_PARALLAX_END],
+    [0, 0, driftX]
+  );
+  const y = useTransform(
+    scrollExplode,
+    [0, HERO_STATS_HOLD_END, HERO_STATS_PARALLAX_END],
+    [0, 0, driftY]
+  );
+  const opacity = useTransform(
+    scrollExplode,
+    [0, HERO_STATS_HOLD_END, HERO_STATS_HOLD_END + 0.12, HERO_STATS_PARALLAX_END + 0.08],
+    [1, 1, 0.55, 0]
+  );
+  const scale = useTransform(
+    scrollExplode,
+    [0, HERO_STATS_HOLD_END, HERO_STATS_PARALLAX_END - 0.02],
+    [1, 1, 1.35]
+  );
 
   return (
     <m.div
@@ -651,19 +752,44 @@ function HeroStatDigit({ index, scrollExplode, displayValue, label, showPlus }) 
       }}
       className="flex flex-col items-center text-center"
     >
-      <span
-        className="font-display text-[clamp(6rem,24vw,14rem)] leading-none tracking-[-0.04em] text-white"
-      >
+      <span className={numberClassName}>
         {showPlus ? `${displayValue}+` : displayValue}
       </span>
-      <span className="mt-4 max-w-[10rem] font-sub text-xs uppercase tracking-[0.2em] text-mist/55 md:text-sm">
+      <span className={labelClassName}>
         {label}
       </span>
     </m.div>
   );
 }
 
-function SectionHero({ heroRef, scrollExplode, startHero }) {
+function HeroIntro() {
+  return (
+    <section
+      className="relative z-10 min-h-screen snap-section overflow-x-hidden bg-black"
+      aria-label="Introduction"
+    >
+      <div className="relative flex min-h-screen flex-col items-center justify-end overflow-x-hidden px-3 pb-3 md:pb-4">
+        <div className="relative isolate flex w-full max-w-[100vw] flex-col items-center">
+          <h1 className="relative z-[2] -mb-[min(12vh,100px)] w-full -translate-y-[min(19vh,156px)] px-3 text-center font-display text-[clamp(2.35rem,11vw,8.75rem)] leading-[0.82] tracking-[-0.045em] text-white md:-mb-[min(15vh,128px)] md:-translate-y-[min(24vh,200px)] md:px-6 md:text-[clamp(2.75rem,12vw,9.5rem)]">
+            VIYAN
+            <br />
+            MANOKARAN
+          </h1>
+          <div className="relative z-[1] -mt-[min(14vh,112px)] h-[min(56vh,600px)] w-[min(100%,680px)] overflow-hidden md:-mt-[min(17vh,136px)] md:h-[min(60vh,660px)]">
+            <img
+              src="/uploads/image.png"
+              alt=""
+              className="pointer-events-none absolute left-1/2 top-0 h-auto w-[min(92vw,620px)] max-w-[620px] origin-top select-none [transform:translateX(-50%)_scale(1.22)] md:w-[min(100%,700px)] md:max-w-[700px] md:[transform:translateX(-50%)_scale(1.28)]"
+              draggable={false}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SectionHero({ scrollExplode, startHero, inCircle = false }) {
   const [started, setStarted] = useState(false);
   useEffect(() => {
     if (!startHero) return;
@@ -678,11 +804,18 @@ function SectionHero({ heroRef, scrollExplode, startHero }) {
 
   const values = [c0, c1, c2, c3];
   const labels = ["Hackathons", "Projects", "Internships", "Certifications"];
+  const numberClassName = inCircle
+    ? "font-display text-[clamp(6rem,24vw,14rem)] leading-none tracking-[-0.04em] text-black"
+    : "font-display text-[clamp(6rem,24vw,14rem)] leading-none tracking-[-0.04em] text-white";
+  const labelClassName = inCircle
+    ? "mt-4 max-w-[10rem] font-sub text-xs uppercase tracking-[0.2em] text-black/55 md:text-sm"
+    : "mt-4 max-w-[10rem] font-sub text-xs uppercase tracking-[0.2em] text-mist/55 md:text-sm";
 
   return (
     <section
-      ref={heroRef}
-      className="relative flex min-h-screen snap-section flex-col items-center justify-center overflow-hidden px-4"
+      className={`relative flex min-h-screen flex-col items-center overflow-hidden px-4 ${
+        inCircle ? "justify-end bg-transparent pb-[18vh]" : "snap-section justify-center bg-void"
+      }`}
     >
       <div className="relative z-10 grid w-full max-w-6xl grid-cols-2 gap-8 md:grid-cols-4 md:gap-4">
         {[0, 1, 2, 3].map((i) => (
@@ -693,13 +826,17 @@ function SectionHero({ heroRef, scrollExplode, startHero }) {
             displayValue={values[i]}
             label={labels[i]}
             showPlus={i === 3}
+            numberClassName={numberClassName}
+            labelClassName={labelClassName}
           />
         ))}
       </div>
 
-      <p className="absolute bottom-10 z-10 font-sub text-xs uppercase tracking-[0.35em] text-mist/35">
-        Scroll
-      </p>
+      {!inCircle && (
+        <p className="absolute bottom-10 z-10 font-sub text-xs uppercase tracking-[0.35em] text-mist/35">
+          Scroll
+        </p>
+      )}
     </section>
   );
 }
@@ -1224,8 +1361,15 @@ function SectionWhoAmI() {
   );
 }
 
-function SectionContact() {
+function SectionContact({ contactRef }) {
   const [ref, inView] = useInView({ threshold: 0.15 });
+  const setRefs = useCallback(
+    (el) => {
+      ref.current = el;
+      if (contactRef) contactRef.current = el;
+    },
+    [ref, contactRef]
+  );
   const items = [
     { icon: IconLinkedIn, label: "LinkedIn", value: CONTACT.linkedin },
     { icon: IconGitHub, label: "GitHub", value: CONTACT.github },
@@ -1235,7 +1379,7 @@ function SectionContact() {
   ];
 
   return (
-    <section ref={ref} className="relative snap-section overflow-hidden pb-32 pt-20 md:px-10">
+    <section ref={setRefs} className="relative snap-section overflow-hidden pb-32 pt-20 md:px-10">
       <div className="relative z-10 mx-auto max-w-5xl px-4">
         <m.h2
           initial={{ opacity: 0, y: 16 }}
@@ -1307,6 +1451,38 @@ function SectionContact() {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Hero → next section: dome / arc wipe (SVG clip-path scroll transition)   */
+/* -------------------------------------------------------------------------- */
+
+function HeroCurtainOverlay({ heroRef, startHero }) {
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const clamped = useTransform(scrollYProgress, (v) => Math.max(0, Math.min(1, v)));
+  const p = useSpring(clamped, { stiffness: 88, damping: 30, mass: 0.42 });
+  const y = useTransform(p, [0, 1], ["108%", "-128%"]);
+  const opacity = useTransform(p, [0, 0.05, 1], [0, 1, 1]);
+
+  return (
+    <m.div
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 bottom-[-120vmax] z-[24] h-[260vmax] w-[260vmax] rounded-full bg-white"
+      style={{
+        x: "-50%",
+        y,
+        opacity,
+        boxShadow: "0 0 56px rgba(0,0,0,0.1)",
+      }}
+    >
+      <div className="absolute inset-0">
+        <SectionHero scrollExplode={clamped} startHero={startHero} inCircle />
+      </div>
+    </m.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*                              Main app                                       */
 /* -------------------------------------------------------------------------- */
 
@@ -1317,6 +1493,7 @@ export default function Portfolio() {
   const projectsRef = useRef(null);
   const skillsRef = useRef(null);
   const certificatesRef = useRef(null);
+  const contactRef = useRef(null);
   const [introReady, setIntroReady] = useState(false);
   const [terminalOpen, setTerminalOpen] = useState(false);
 
@@ -1334,10 +1511,15 @@ export default function Portfolio() {
     };
   }, [introReady]);
 
-  const { scrollYProgress: heroProg } = useScroll({
+  const { scrollYProgress: heroCoverProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
+  const heroLayerOpacity = useTransform(
+    heroCoverProgress,
+    [0, 0.55, 0.82, 1],
+    [1, 1, 0.18, 0]
+  );
 
   return (
     <LazyMotion features={domAnimation} strict>
@@ -1376,9 +1558,36 @@ export default function Portfolio() {
             aria-controls="terminal-nav-shell"
             aria-label={terminalOpen ? "Close terminal navigation" : "Open terminal navigation"}
           >
-            <span />
-            <span />
-            <span />
+            <svg
+              className="terminal-toggle__icon"
+              viewBox="0 0 54 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient id="cmd-face" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#0a0a0a" />
+                  <stop offset="72%" stopColor="#000000" />
+                  <stop offset="100%" stopColor="#1c1c1c" />
+                </linearGradient>
+              </defs>
+              <rect x="0.5" y="0.5" width="53" height="39" rx="3.5" fill="#0d0d0d" stroke="rgba(255,255,255,0.45)" />
+              <rect x="1" y="1" width="52" height="9" rx="2.5" fill="#4a4a4e" />
+              <rect x="1" y="9" width="52" height="30" rx="0" fill="url(#cmd-face)" />
+              <line x1="1" y1="9" x2="53" y2="9" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
+              <text
+                x="5"
+                y="27.5"
+                fill="#f5f5f5"
+                fontFamily="ui-monospace, Consolas, &quot;Courier New&quot;, monospace"
+                fontSize="9.5"
+                fontWeight="600"
+                letterSpacing="0.02em"
+              >
+                {"C:\\>_"}
+              </text>
+            </svg>
           </button>
 
           {terminalOpen && (
@@ -1389,11 +1598,24 @@ export default function Portfolio() {
                 hackathonsRef={hackathonsRef}
                 skillsRef={skillsRef}
                 certificatesRef={certificatesRef}
+                projectsRef={projectsRef}
+                contactRef={contactRef}
+                onRequestClose={() => setTerminalOpen(false)}
               />
             </div>
           )}
-          {/* ========== SECTION 1 — HERO ========== */}
-          <SectionHero heroRef={heroRef} scrollExplode={heroProg} startHero={introReady} />
+          {/* ========== SECTION 1 — HERO (intro + stats) ========== */}
+          <div ref={heroRef} className="relative h-[240vh]">
+            <div className="sticky top-0 h-screen overflow-hidden">
+              <m.div style={{ opacity: heroLayerOpacity }}>
+                <HeroIntro />
+              </m.div>
+              {introReady && <HeroCurtainOverlay heroRef={heroRef} startHero={introReady} />}
+            </div>
+          </div>
+          <div className="transition-zone sr-only" aria-hidden>
+            Hero boundary — pinned hero while dome curtain progresses with scroll.
+          </div>
 
           {/* ========== SECTION 2 — HACKATHONS ========== */}
           <SectionHackathons containerRef={hackathonsRef} />
@@ -1418,7 +1640,7 @@ export default function Portfolio() {
           <SectionWhoAmI />
 
           {/* ========== SECTION 8 — CONTACT ========== */}
-          <SectionContact />
+          <SectionContact contactRef={contactRef} />
 
           <footer className="relative overflow-hidden border-t border-white/5 py-10 text-center font-sub text-xs text-mist/35">
             <p className="relative z-10">

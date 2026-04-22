@@ -11,7 +11,8 @@ export default function BlobCursor() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (!window.matchMedia("(pointer: fine)").matches) return undefined;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!window.matchMedia("(pointer: fine)").matches || prefersReducedMotion) return undefined;
     setShow(true);
     return undefined;
   }, []);
@@ -31,8 +32,8 @@ export default function BlobCursor() {
       outer.style.cssText = `
         position:absolute; border-radius:50%;
         width:${cfg.size}px; height:${cfg.size}px;
-        background:#fff; transform:translate(-50%,-50%);
-        pointer-events:none; will-change:left,top;
+        background:#fff; transform:translate3d(-300px,-300px,0) translate(-50%,-50%);
+        pointer-events:none; will-change:transform;
       `;
       const inner = document.createElement("div");
       inner.style.cssText = `
@@ -63,8 +64,7 @@ export default function BlobCursor() {
       blobs.forEach((b) => {
         b.x = lerp(b.x, mx, b.speed);
         b.y = lerp(b.y, my, b.speed);
-        b.el.style.left = `${b.x}px`;
-        b.el.style.top = `${b.y}px`;
+        b.el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0) translate(-50%, -50%)`;
       });
       rafId = requestAnimationFrame(tick);
     };

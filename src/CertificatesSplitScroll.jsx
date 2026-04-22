@@ -128,6 +128,8 @@ function crackOpacity(phase1) {
 export function CertificatesSplitScroll({ certificates, containerRef }) {
   const progRef = useRef(0);
   const [prog, setProg] = useState(0);
+  const progRafRef = useRef(0);
+  const pendingProgRef = useRef(null);
 
   const panels = useMemo(
     () =>
@@ -151,6 +153,26 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
   );
   const lastStagger = FLIP_STAGGER[Math.min(Math.max(nPanels - 1, 0), 2)];
 
+  const syncProgressState = useCallback(() => {
+    if (progRafRef.current) return;
+    progRafRef.current = requestAnimationFrame(() => {
+      progRafRef.current = 0;
+      const next = pendingProgRef.current;
+      if (next == null) return;
+      pendingProgRef.current = null;
+      setProg((prev) => (Math.abs(prev - next) < 0.001 ? prev : next));
+    });
+  }, []);
+
+  const setProgress = useCallback(
+    (next) => {
+      progRef.current = next;
+      pendingProgRef.current = next;
+      syncProgressState();
+    },
+    [syncProgressState]
+  );
+
   useEffect(() => {
     const el = containerRef?.current;
     if (!el) return;
@@ -158,6 +180,7 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
       ([e]) => {
         if (!e.isIntersecting) {
           progRef.current = 0;
+          pendingProgRef.current = 0;
           setProg(0);
           syncCertificatesVerticalLock(progRef, containerRef);
         }
@@ -176,9 +199,13 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
     return () => {
       window.removeEventListener("scroll", sync);
       window.removeEventListener("resize", sync);
+      if (progRafRef.current) {
+        cancelAnimationFrame(progRafRef.current);
+        progRafRef.current = 0;
+      }
       if (typeof window !== "undefined") window.__certificatesWheelLocksVertical = false;
     };
-  }, [containerRef, prog]);
+  }, [containerRef]);
 
   const applyScrollDelta = useCallback(
     (deltaY) => {
@@ -194,8 +221,7 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
         if (deltaY > 0 && p < 1) {
           if (!pinned) return false;
           const next = Math.max(0, Math.min(1, p + deltaY * CERT_SCROLL_SENS));
-          progRef.current = next;
-          setProg(next);
+          setProgress(next);
           return true;
         }
 
@@ -205,8 +231,7 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
         if (deltaY < 0 && p > 0) {
           if (!pinned) return false;
           const next = Math.max(0, Math.min(1, p + deltaY * CERT_SCROLL_SENS));
-          progRef.current = next;
-          setProg(next);
+          setProgress(next);
           return true;
         }
 
@@ -215,10 +240,13 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
         syncCertificatesVerticalLock(progRef, containerRef);
       }
     },
-    [containerRef]
+    [containerRef, setProgress]
   );
 
   useEffect(() => {
+    const el = containerRef?.current;
+    if (!el) return;
+
     const onWheel = (e) => {
       const dy = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
       const consumed = applyScrollDelta(dy);
@@ -241,18 +269,18 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
       lastTouchY = null;
     };
 
-    window.addEventListener("wheel", onWheel, { passive: false, capture: true });
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
-    window.addEventListener("touchend", onTouchEnd);
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd);
 
     return () => {
-      window.removeEventListener("wheel", onWheel, { capture: true });
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
     };
-  }, [applyScrollDelta]);
+  }, [applyScrollDelta, containerRef]);
 
   const phase1 = p1(prog);
   const phase2 = p2(prog);
@@ -262,7 +290,12 @@ export function CertificatesSplitScroll({ certificates, containerRef }) {
   const vignetteAlpha = phase1 * 0.88;
 
   return (
-    <section ref={containerRef} className="relative min-h-screen snap-section overflow-hidden bg-void" aria-label="Certificates">
+    <section
+      ref={containerRef}
+      data-certificates-scroll-gate
+      className="relative min-h-screen snap-section overflow-hidden bg-void"
+      aria-label="Certificates"
+    >
       <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-void">
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
           <ConfettiBackground />

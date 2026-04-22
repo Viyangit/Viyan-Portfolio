@@ -29,7 +29,9 @@ function initLenis() {
     prevent(node) {
       if (typeof window === "undefined") return false;
       if (!(node instanceof HTMLElement)) return false;
-      if (window.__certificatesWheelLocksVertical === true) return true;
+      if (window.__certificatesWheelLocksVertical === true) {
+        return !!node.closest("[data-certificates-scroll-gate]");
+      }
       if (window.__projectCarouselLocksVertical === true) {
         return !!node.closest("[data-projects-scroll-gate]");
       }

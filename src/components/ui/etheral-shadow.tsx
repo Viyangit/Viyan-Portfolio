@@ -261,6 +261,23 @@ export const ETHEREAL_DEFAULTS = {
 
 /** Single full-viewport layer — use instead of many `EtherealSectionBackdrop`s. */
 export function GlobalEtherealBackdrop({ className = "" }: { className?: string }) {
+  const isBrowser = typeof window !== "undefined";
+  const prefersReducedMotion = isBrowser && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const largeViewport = isBrowser && window.innerWidth >= 1280;
+  const backdropDefaults = prefersReducedMotion
+    ? {
+        ...ETHEREAL_DEFAULTS,
+        animation: { scale: 0, speed: 90 },
+        noise: { opacity: 0.35, scale: 1 },
+      }
+    : largeViewport
+      ? {
+          ...ETHEREAL_DEFAULTS,
+          animation: { scale: 70, speed: 78 },
+          noise: { opacity: 0.72, scale: 1.05 },
+        }
+      : ETHEREAL_DEFAULTS;
+
   return (
     <div
       className={cn(
@@ -269,7 +286,7 @@ export function GlobalEtherealBackdrop({ className = "" }: { className?: string 
       )}
       aria-hidden
     >
-      <Component className="h-full min-h-[100dvh] w-full" {...ETHEREAL_DEFAULTS} />
+      <Component className="h-full min-h-[100dvh] w-full" {...backdropDefaults} />
     </div>
   );
 }

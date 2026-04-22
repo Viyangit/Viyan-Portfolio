@@ -14,8 +14,7 @@ import { GlobalEtherealBackdrop } from "@/components/ui/etheral-shadow";
 import { DotLoader, DOT_LOADER_FRAMES } from "./DotLoader.jsx";
 import { HackathonGlitchDeck } from "./HackathonGlitchDeck.jsx";
 import { CertificatesSplitScroll } from "./CertificatesSplitScroll.jsx";
-import FlowingMenu from "./components/ui/FlowingMenu.jsx";
-import ScrollVelocityLogoLoop from "./components/ui/ScrollVelocityLogoLoop.jsx";
+import StickyProjectTextCards from "./components/ui/StickyProjectTextCards.jsx";
 
 /* -------------------------------------------------------------------------- */
 /*                              Motion variants                                */
@@ -35,21 +34,19 @@ const heroNumberVariants = {
 };
 
 const cardSlideLeft = {
-  hidden: { opacity: 0, x: -120, filter: "blur(12px)" },
+  hidden: { opacity: 0, x: -120 },
   visible: {
     opacity: 1,
     x: 0,
-    filter: "blur(0px)",
     transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
   },
 };
 
 const cardSlideRight = {
-  hidden: { opacity: 0, x: 120, filter: "blur(12px)" },
+  hidden: { opacity: 0, x: 120 },
   visible: {
     opacity: 1,
     x: 0,
-    filter: "blur(0px)",
     transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
   },
 };
@@ -59,13 +56,11 @@ const internshipCardVariants = {
     opacity: 0,
     rotateY: 88,
     x: 40,
-    filter: "blur(14px)",
   },
   visible: (i) => ({
     opacity: 1,
     rotateY: 0,
     x: 0,
-    filter: "blur(0px)",
     transition: {
       delay: i * 0.12,
       duration: 0.75,
@@ -75,11 +70,10 @@ const internshipCardVariants = {
 };
 
 const contactCardVariants = {
-  hidden: { opacity: 0, y: 56, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 56 },
   visible: (i) => ({
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: { delay: 0.08 * i, duration: 0.55, ease: [0.22, 1, 0.36, 1] },
   }),
 };
@@ -244,15 +238,6 @@ const PROJECTS = [
       "Designed a farmer-logistics marketplace concept that connects producers and transport workflows while adding seasonal cost forecasting support. Using generative model assistance, the platform helps users anticipate pricing fluctuations and make more informed planning decisions for crop movement and delivery timelines.",
     gh: "github.com/viyan/farm-easy",
   },
-];
-
-/** Stable textures for the 3D project tunnel (Picsum seeds). */
-const PROJECT_GALLERY_TEXTURES = [
-  "https://picsum.photos/seed/viyan-envision/960/720",
-  "https://picsum.photos/seed/viyan-tmap/960/720",
-  "https://picsum.photos/seed/viyan-bvs/960/720",
-  "https://picsum.photos/seed/viyan-transport/960/720",
-  "https://picsum.photos/seed/viyan-farmeasy/960/720",
 ];
 
 const SKILL_GROUPS = {
@@ -1027,45 +1012,18 @@ function SectionInternships({ containerRef, projectsRef, introReady }) {
 }
 
 function SectionProjects({ containerRef }) {
-  const [openProjectName, setOpenProjectName] = useState(null);
-  const flowingMenuItems = useMemo(
-    () =>
-      PROJECTS.map((p, i) => ({
-        itemId: p.name,
-        link: `https://${p.gh}`,
-        text: p.name,
-        image: PROJECT_GALLERY_TEXTURES[i] ?? PROJECT_GALLERY_TEXTURES[0],
-        year: p.year,
-        client: p.client,
-        desc: p.desc,
-        gh: p.gh,
-      })),
-    []
-  );
-
   return (
     <section
       ref={containerRef}
+      data-projects-scroll-gate
       className="relative snap-section overflow-hidden bg-void pb-10 md:pb-14"
     >
       <h2 className="pointer-events-none absolute left-6 top-6 z-20 font-display text-5xl tracking-tight text-white/95 md:left-10 md:top-8 md:text-7xl">
         Projects
       </h2>
-      <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 pt-[4.5rem] md:pt-24">
-        <div className="relative min-h-[420px] w-full border-y border-white/10 shadow-glow-sm">
-          <FlowingMenu
-            items={flowingMenuItems}
-            speed={12}
-            textColor="#ffffff"
-            bgColor="#060a12"
-            marqueeBgColor="#ffffff"
-            marqueeTextColor="#000000"
-            borderColor="rgba(255,255,255,0.18)"
-            activeItemId={openProjectName}
-            onItemToggle={(itemId) =>
-              setOpenProjectName((prev) => (prev === itemId ? null : itemId))
-            }
-          />
+      <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2">
+        <div className="relative w-full border-y border-white/10 shadow-glow-sm">
+          <StickyProjectTextCards cards={PROJECTS} />
         </div>
       </div>
     </section>
@@ -1205,15 +1163,6 @@ function SectionSkills({ containerRef }) {
 
   return (
     <section ref={sectionRef} className="relative min-h-screen snap-section px-4 pb-32 pt-10 md:px-10 md:pb-40 md:pt-14">
-      {/* Full-bleed to viewport edges: negate section padding (body is overflow-x-hidden). */}
-      <div className="relative z-10 mb-16 md:mb-20 -mx-4 w-[calc(100%+2rem)] max-w-none text-left md:-mx-10 md:w-[calc(100%+5rem)]">
-        <ScrollVelocityLogoLoop
-          text="React · TypeScript · Vite · Motion · Tailwind · Barba · Lenis · Python · OpenCV"
-          velocity={95}
-          logoSpeed={72}
-          fadeColor="#000000"
-        />
-      </div>
       <div className="relative z-10 mx-auto max-w-4xl text-center">
         <h2 className="mb-6 font-display text-5xl tracking-tight text-white md:text-7xl">
           Skills
@@ -1298,7 +1247,7 @@ function SectionWhoAmI() {
               key="title"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, filter: "blur(14px)", y: -8 }}
+              exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.55 }}
               className="font-display text-6xl tracking-tight text-white md:text-8xl"
             >
@@ -1355,8 +1304,8 @@ function SectionWhoAmI() {
           {phase === 2 && (
             <m.div
               key="bio"
-              initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
               className="mt-10 max-w-2xl font-display text-lg leading-relaxed text-mist/85 md:text-xl"
             >
@@ -1479,12 +1428,12 @@ function HeroCurtainOverlay({ heroRef, startHero }) {
   return (
     <m.div
       aria-hidden
-      className="pointer-events-none absolute left-1/2 bottom-[-120vmax] z-[24] h-[260vmax] w-[260vmax] rounded-full bg-white"
+      className="pointer-events-none absolute left-1/2 bottom-[-95vmax] z-[24] h-[210vmax] w-[210vmax] rounded-full bg-white"
       style={{
         x: "-50%",
         y,
         opacity,
-        boxShadow: "0 0 56px rgba(0,0,0,0.1)",
+        boxShadow: "0 0 28px rgba(0,0,0,0.08)",
       }}
     >
       <div className="absolute inset-0">

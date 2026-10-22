@@ -1,0 +1,421 @@
+/* Projects ring, after avivashishta.com: a framed window with a soft sunset sky and a 3D ring
+   of poster cards. Chain: window (perspective) → tilt → stage → ring → cards, all preserve-3d. */
+
+.pring {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vh, 1.75rem);
+  height: 100svh;
+  min-height: 36rem;
+  padding: 5rem var(--gutter) clamp(1.25rem, 3vh, 2rem);
+  background: var(--sand);
+  color: var(--wine);
+}
+
+.pring__window {
+  --cw: clamp(170px, 13.5vw, 250px);
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 28px;
+  overflow: hidden;
+  perspective-origin: 50% 46%;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  isolation: isolate;
+  background: var(--paper);
+}
+
+.pring__window:active {
+  cursor: grabbing;
+}
+
+/* The sky: Viyan's sunset photo, blurred until only its colour remains, under a wine wash. */
+.pring__sky {
+  position: absolute;
+  inset: -10%;
+  z-index: -1;
+  /* Only the open sky in the top-left of the photo, so no silhouette shows through the blur. */
+  background: url("/uploads/viyan-sunset.webp") 0% 0% / 320% auto no-repeat;
+  filter: blur(36px) saturate(1.25);
+  transform: scale(1.1);
+  opacity: var(--sky, 1);
+}
+
+.pring__sky::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(127, 1, 31, 0.12), rgba(127, 1, 31, 0.38) 70%, rgba(92, 0, 22, 0.6));
+}
+
+.pring__tilt,
+.pring__stage,
+.pring__ring {
+  transform-style: preserve-3d;
+}
+
+.pring__tilt {
+  position: absolute;
+  inset: 0;
+}
+
+.pring__stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.pring__ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  will-change: transform;
+}
+
+.pcard {
+  position: absolute;
+  left: calc(var(--cw) / -2);
+  top: calc(var(--cw) * -0.81);
+  width: var(--cw);
+  height: calc(var(--cw) * 1.62);
+  transform: rotateY(var(--a)) translateZ(calc(var(--ring-r) * -1)) scale(var(--pop, 1));
+  transform-style: preserve-3d;
+}
+
+/* Two faces per card: the clickable front, and a back that reads the same from outside the ring. */
+.pcard__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: calc(var(--cw) * 0.08);
+  border: 0;
+  border-radius: 18px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 24px 48px rgba(40, 0, 10, 0.35);
+  transition: transform 0.4s var(--ease);
+}
+
+.pcard__btn:hover,
+.pcard__btn:focus-visible {
+  transform: translateY(-6px);
+}
+
+.pcard--wine .pcard__face { background: var(--wine); color: var(--sand); }
+.pcard--deep .pcard__face { background: #4a0012; color: var(--sand); }
+.pcard--sand .pcard__face { background: var(--sand); color: var(--wine); }
+.pcard--paper .pcard__face { background: var(--paper); color: var(--wine); }
+
+.pcard__client {
+  font-size: calc(var(--cw) * 0.058);
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.pcard__motif {
+  width: 100%;
+  margin-top: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pcard__barcode {
+  margin-top: auto;
+}
+
+.pcard__barcode .barcode {
+  width: 100%;
+  height: calc(var(--cw) * 0.36);
+  fill: currentColor;
+}
+
+.pcard__name {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: calc(var(--cw) * 0.2);
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.pcard__line {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: calc(var(--cw) * 0.056);
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
+.pcard__stack {
+  font-size: calc(var(--cw) * 0.05);
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.pring__foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+
+.pring__lede {
+  max-width: 44ch;
+  margin: 0;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: clamp(1.15rem, 2vw, 1.9rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.pring__ref {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--signal);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 5px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.pring__ref:hover {
+  color: var(--wine-3);
+}
+
+.pring__ref sup {
+  margin-left: 0.1em;
+  font-size: 0.45em;
+  color: var(--wine-3);
+}
+
+.pring__stats {
+  display: flex;
+  gap: clamp(1.25rem, 3vw, 2.75rem);
+  margin: 0;
+}
+
+.pring__stats div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.pring__stats dd {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+  line-height: 0.95;
+}
+
+.pring__stats dt {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #7a3f48;
+}
+
+@media (max-width: 820px) {
+  .pring {
+    height: auto;
+    min-height: 100svh;
+    padding-top: 4.5rem;
+  }
+  .pring__window {
+    --cw: 150px;
+    flex: none;
+    height: 58svh;
+    border-radius: 20px;
+  }
+  .pring__foot {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcard__btn {
+    transition: none;
+  }
+}
+
+/* The 3D wrappers sit at z = 0, in front of the cards (which are pushed back into the scene),
+   so they must let clicks through; only the cards themselves take pointer events. */
+.pring__tilt,
+.pring__stage,
+.pring__ring,
+.pcard {
+  pointer-events: none;
+}
+
+.pcard__face {
+  pointer-events: auto;
+}
+
+/* Cards only take clicks once the entrance has finished. */
+.pcard[data-live="0"] .pcard__face {
+  pointer-events: none;
+}
+
+/* Display words framing the ring: "Selected" hollow above, "Projects" solid white below.
+   They sit behind the cards and fade in with the sky during the entrance. */
+.pring__word {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  margin: 0;
+  text-align: center;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: min(15vw, 21vh);
+  line-height: 0.82;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: var(--sky, 1);
+  pointer-events: none;
+}
+
+.pring__word--top {
+  top: 4%;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--paper);
+}
+
+.pring__word--bottom {
+  bottom: 9%;
+  color: var(--paper);
+}
+
+.pring__tilt {
+  z-index: 1;
+}
+
+@media (max-width: 820px) {
+  .pring__word {
+    font-size: 21vw;
+  }
+  .pring__word--top {
+    -webkit-text-stroke-width: 1.5px;
+  }
+}
+
+/* Size the words to the gaps above and below the cards, so neither is covered. */
+.pring__word {
+  font-size: min(10.5vw, 14.5vh);
+}
+
+.pring__word--top {
+  top: 2.5%;
+}
+
+.pring__word--bottom {
+  bottom: 3%;
+}
+
+@media (max-width: 820px) {
+  .pring__word {
+    font-size: 17vw;
+  }
+}
+
+/* Words fill the boxes above and below the cards (about 70% wide, a quarter of the window tall).
+   The SVG stretches its text to the box, so these rules only set the box. */
+.pring__word {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  width: auto;
+  height: 23%;
+  font-size: inherit;
+  opacity: var(--sky, 1);
+  overflow: visible;
+}
+
+.pring__word--top {
+  top: 2%;
+  bottom: auto;
+}
+
+.pring__word--bottom {
+  left: 12.5%;
+  right: 12.5%;
+  top: auto;
+  bottom: 2%;
+}
+
+.pring__word-text {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 268px;
+  fill: var(--paper);
+}
+
+.pring__word-text--hollow {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (max-width: 820px) {
+  .pring__word {
+    left: 6%;
+    right: 6%;
+    height: 16%;
+  }
+  .pring__word--bottom {
+    left: 6%;
+    right: 6%;
+  }
+}
+
+/* SVGs don't stretch between left/right, so give the boxes explicit widths. */
+.pring__word--top {
+  left: 15%;
+  width: 70%;
+}
+
+.pring__word--bottom {
+  left: 12.5%;
+  width: 75%;
+}
+
+.pring__word-text {
+  font-size: 236px;
+}
+
+@media (max-width: 820px) {
+  .pring__word--top,
+  .pring__word--bottom {
+    left: 6%;
+    width: 88%;
+  }
+}
+
+.pring__word--top {
+  top: 4.5%;
+}
+
+.pring__word--bottom {
+  bottom: 4%;
+}

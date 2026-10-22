@@ -135,22 +135,6 @@ export default function CertScanner() {
           </div>
           <i className="certs__bar" aria-hidden="true" />
         </div>
-
-        <div className="certs__out" aria-live="polite">
-          <p className="certs__out-title">{phase === "scanning" ? "Reading document…" : "Extracted record"}</p>
-          <pre className="certs__json">
-            {"{\n"}
-            {lines.map((l, i) => (
-              <span key={i}>
-                {"  "}
-                {l}
-                {l.length === fullText[i].length && i < lines.length - 1 ? "," : ""}
-                {"\n"}
-              </span>
-            ))}
-            {typed >= totalChars ? "}" : <span className="certs__caret" />}
-          </pre>
-        </div>
       </div>
     </section>
   );

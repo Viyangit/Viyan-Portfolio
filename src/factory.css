@@ -1,0 +1,301 @@
+/* Skill factory: an Anatomy-kit isometric figure, re-inked in the site's wine and sand. */
+
+.fx-section {
+  padding: clamp(5rem, 10vw, 8rem) var(--gutter);
+  background: var(--sand);
+  color: var(--wine);
+}
+
+.fx-head {
+  max-width: 62rem;
+  margin: 0 auto 2.5rem;
+}
+
+.fx-kicker {
+  margin: 0 0 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--wine-3);
+}
+
+.fx-lede {
+  max-width: 34rem;
+  margin: 1rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* Kit tokens: sand paper, wine ink, amber for the one lit part. */
+.fx-figure.iso[data-theme="light"] {
+  --anatomy-page: var(--sand);
+  --anatomy-card: var(--sand);
+  --anatomy-text: #7a2a3a;
+  --anatomy-strong: var(--wine);
+  --anatomy-muted: #a77a7f;
+  --anatomy-paper: var(--sand);
+  --anatomy-face: #fbf5e6;
+  --anatomy-top: #fdf9ee;
+  --anatomy-shade-0:#d2b98c;
+  --anatomy-shade-1:#dec7a0;
+  --anatomy-shade-2:#e9d8b6;
+  --anatomy-shade-3:#f2e5c9;
+  --anatomy-lit-top: #fbdca2;
+  --anatomy-lit-shade: #f1c77c;
+  --anatomy-hi: #5c0016;
+  --anatomy-mid:#8d4b54;
+  --anatomy-lo:#b98a85;
+  --anatomy-faint:#d9bba8;
+  --anatomy-lit: #b8650e;
+  --anatomy-halo: #7f011f;
+  --anatomy-halo-opacity:0.22;
+  --anatomy-dot: #5c0016;
+  max-width: none;
+  margin: 0 calc(var(--gutter) * -0.5);
+}
+
+/* No card: the machine stands on the page itself. */
+.fx-plate {
+  position: relative;
+  padding: 2.4rem 0 2.6rem;
+  --anatomy-paper: var(--sand);
+}
+
+.fx-corners {
+  position: absolute;
+  inset: 0 var(--gutter);
+  pointer-events: none;
+}
+
+.fx-corners span {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--wine-3);
+}
+
+.fx-corners [data-corner="fig"] { top: 0; left: 0; }
+.fx-corners [data-corner="title"] { top: 0; right: 0; text-align: right; }
+.fx-corners [data-corner="hint"] { bottom: 0; left: 0; opacity: 0.7; }
+.fx-corners [data-corner="readout"] { bottom: 0; right: 0; color: var(--wine); }
+
+.fx-stage {
+  overflow: hidden;
+}
+
+.fx-stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 86vh;
+}
+
+/* Things the machine prints or displays. */
+.fx-figure .iso-face-text {
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.fx-label {
+  fill: var(--anatomy-face);
+  stroke: var(--anatomy-mid);
+  stroke-width: 0.5;
+}
+
+.fx-label-text {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 4.4px;
+  letter-spacing: 0.06em;
+  fill: var(--wine);
+}
+
+.fx-slot {
+  fill: var(--anatomy-shade-0);
+  stroke: var(--anatomy-mid);
+  stroke-width: 0.5;
+}
+
+.fx-display {
+  fill: #2a000a;
+  stroke: var(--anatomy-mid);
+  stroke-width: 0.5;
+}
+
+.fx-display-text {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 3.6px;
+  letter-spacing: 0.08em;
+  fill: var(--signal);
+}
+
+.fx-beam {
+  fill: rgba(233, 162, 59, 0.22);
+}
+
+.fx-spot {
+  fill: rgba(233, 162, 59, 0.35);
+}
+
+/* A hovered crate: its label plate lights. */
+[data-crate].is-hot .fx-label {
+  fill: var(--signal);
+  stroke: var(--wine);
+}
+
+/* ---- Legend: three crates, every skill listed; chips fill as tiles land. ---- */
+.fx-legend {
+  max-width: 76rem;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.4rem;
+  margin-top: 1.4rem;
+}
+
+.fx-group {
+  padding: 1rem 1.1rem 1.1rem;
+  border-top: 2px solid rgba(127, 1, 31, 0.25);
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.fx-group.is-hot {
+  border-top-color: var(--signal);
+  background: rgba(233, 162, 59, 0.08);
+}
+
+.fx-group-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.6rem;
+  margin: 0 0 0.8rem;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.fx-group-title span {
+  flex-basis: 100%;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: var(--wine-3);
+}
+
+.fx-group-title b {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.fx-group ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fx-group li {
+  padding: 0.22rem 0.6rem;
+  border: 1px dashed rgba(127, 1, 31, 0.35);
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: rgba(127, 1, 31, 0.55);
+  transition: background 0.35s, color 0.35s, border-color 0.35s;
+}
+
+.fx-group li.is-in {
+  border-style: solid;
+  border-color: var(--wine);
+  background: var(--wine);
+  color: var(--sand);
+}
+
+@media (max-width: 820px) {
+  .fx-plate {
+    padding: 2.8rem 0 2.6rem;
+    overflow: hidden;
+  }
+
+  .fx-stage svg {
+    width: 128%;
+    margin-left: -14%;
+  }
+
+  .fx-corners [data-corner="title"],
+  .fx-corners [data-corner="hint"] {
+    display: none;
+  }
+
+  .fx-legend {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Wide screens: crate lists sit in the open space beside the machine, crates 01 and 02 on the
+   left under the belt arm, crate 03 on the right above the crates. */
+@media (min-width: 1100px) {
+  .fx-legend {
+    position: absolute;
+    inset: 0 var(--gutter);
+    max-width: none;
+    margin: 0;
+    display: block;
+    pointer-events: none;
+  }
+
+  .fx-group {
+    position: absolute;
+    width: min(24rem, 26vw);
+    pointer-events: auto;
+    background: rgba(245, 235, 208, 0.82);
+  }
+
+  .fx-group:nth-child(1) {
+    left: 0;
+    bottom: 26%;
+  }
+
+  .fx-group:nth-child(2) {
+    left: 0;
+    bottom: 4%;
+  }
+
+  .fx-group:nth-child(3) {
+    right: 0;
+    top: 8%;
+  }
+}
+
+/* While the camera is zoomed in on the first tile, the crate lists step aside. */
+.fx-legend {
+  transition: opacity 0.6s var(--ease), visibility 0.6s;
+}
+
+.fx-plate.is-zoomed .fx-legend {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Feathered edges: the drawing fades into the page on every side and corner, so a zoomed-in view
+   never ends on a hard cut. */
+.fx-stage {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
+    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
+    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  mask-composite: intersect;
+}

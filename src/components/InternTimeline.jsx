@@ -79,7 +79,8 @@ export default function InternTimeline() {
             gsap.fromTo(img, { xPercent: k ? -14 : -10 }, { xPercent: k ? 14 : 10, ease: "none", scrollTrigger: along });
           });
           const lead = per.querySelector(".per__copy");
-          const drift = () => Math.min(90, section.clientWidth * 0.06);
+          // No drift on phones: the copy fills the width there and would slide off the edge.
+          const drift = () => (section.clientWidth < 820 ? 0 : Math.min(90, section.clientWidth * 0.06));
           if (lead) gsap.fromTo(lead, { x: drift }, { x: () => -drift(), ease: "none", scrollTrigger: along });
           // Photos open with a wipe as the period comes in.
           per.querySelectorAll(".per__photo").forEach((ph, k) =>

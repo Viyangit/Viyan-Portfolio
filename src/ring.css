@@ -240,7 +240,7 @@
     padding-top: 4.5rem;
   }
   .pring__window {
-    --cw: 150px;
+    --cw: 116px;
     flex: none;
     height: 58svh;
     border-radius: 20px;

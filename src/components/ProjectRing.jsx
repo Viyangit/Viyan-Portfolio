@@ -183,7 +183,7 @@ export default function ProjectRing() {
     const smooth = (t) => t * t * (3 - 2 * t);
 
     const phone = window.matchMedia("(max-width: 820px)").matches;
-    const SWEEP_PERIOD = 16; // seconds for one full left-to-right-and-back
+    const SWEEP_PERIOD = 34; // seconds for one full left-to-right-and-back; slow enough to read each card
     let sweepT = 0;
     const tick = (time, dt) => {
       if (!visible || frozen.current) return;

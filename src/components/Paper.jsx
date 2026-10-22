@@ -1,23 +1,36 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { PROFILE } from "../data.js";
 
-const ARXIV = "https://arxiv.org/abs/1706.03762";
-
 /**
- * "Reading" section: the first page of a paper I've read, as an annotated printout.
+ * "Reading" section: the first page of each paper I've read, as an annotated printout.
  * Body text is my own summary, not the paper's text. Highlights sweep in as you scroll.
  */
 export default function Paper() {
   const rootRef = useRef(null);
-  const sheetRef = useRef(null);
+  const duoRef = useRef(null);
+  // The two papers trade places on top of each other every 4 seconds while the section is on screen.
+  const [front, setFront] = useState("attention");
+  useEffect(() => {
+    const duo = duoRef.current;
+    let visible = false;
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+    io.observe(duo);
+    const timer = setInterval(() => {
+      if (visible) setFront((f) => (f === "attention" ? "lora" : "attention"));
+    }, 4000);
+    return () => {
+      clearInterval(timer);
+      io.disconnect();
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.fromTo(
-          ".paper-stack",
+          ".paper-duo",
           { rotate: -7, yPercent: 14 },
           {
             rotate: -1.5,
@@ -50,50 +63,24 @@ export default function Paper() {
     return () => ctx.revert();
   }, []);
 
-  // The sheet lifts and tilts toward the pointer, like paper picked up off a desk.
-  useEffect(() => {
-    if (!window.matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches) return;
-    const sheet = sheetRef.current;
-    const rx = gsap.quickTo(sheet, "rotationX", { duration: 0.6, ease: "power3.out" });
-    const ry = gsap.quickTo(sheet, "rotationY", { duration: 0.6, ease: "power3.out" });
-    const onMove = (e) => {
-      const r = sheet.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width - 0.5;
-      const py = (e.clientY - r.top) / r.height - 0.5;
-      ry(px * 7);
-      rx(-py * 5);
-    };
-    const onLeave = () => {
-      rx(0);
-      ry(0);
-    };
-    sheet.addEventListener("pointermove", onMove);
-    sheet.addEventListener("pointerleave", onLeave);
-    return () => {
-      sheet.removeEventListener("pointermove", onMove);
-      sheet.removeEventListener("pointerleave", onLeave);
-    };
-  }, []);
 
   return (
     <section ref={rootRef} id="reading" className="reading" aria-labelledby="reading-title">
       <div className="reading__intro">
+        <p className="reading__word" aria-hidden="true">
+          Papers
+        </p>
         <h2 id="reading-title" className="section-title">
           On my desk
         </h2>
         <p>
-          The paper that every model I ship is built on. I've read it end to end; these are the ideas I keep
-          coming back to.
+          Two papers my work is built on: the Transformer under every model I ship, and LoRA, the adapters inside
+          FedLearn. I've read both end to end; these are the ideas I keep coming back to.
         </p>
-        <a className="reading__link" href={ARXIV} target="_blank" rel="noreferrer" data-detect="arxiv">
-          Read the paper on arXiv
-        </a>
       </div>
 
-      <div className="paper-stack">
-        <div className="paper-stack__under" aria-hidden="true" />
-        <div className="paper-stack__under paper-stack__under--2" aria-hidden="true" />
-        <article ref={sheetRef} className="sheet" data-detect="paper">
+      <div className="paper-stack paper-duo" ref={duoRef}>
+        <article className={`sheet sheet--left ${front === "attention" ? "is-front" : "is-back"}`} data-detect="attention">
           <p className="sheet__arxiv" aria-hidden="true">
             arXiv:1706.03762 [cs.CL]
           </p>
@@ -170,6 +157,81 @@ export default function Paper() {
 
           <footer className="sheet__foot" aria-hidden="true">
             <span>31st Conference on Neural Information Processing Systems</span>
+            <span>1</span>
+          </footer>
+        </article>
+        <article className={`sheet sheet--right ${front === "lora" ? "is-front" : "is-back"}`} data-detect="lora">
+          <p className="sheet__arxiv" aria-hidden="true">
+            arXiv:2106.09685 [cs.CL]
+          </p>
+
+          <header className="sheet__head">
+            <h3 className="sheet__title">LoRA: Low-Rank Adaptation of Large Language Models</h3>
+            <p className="sheet__authors">
+              Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, Weizhu
+              Chen
+            </p>
+            <p className="sheet__venue">2021</p>
+            <p className="sheet__reader">Reader's notes: {PROFILE.name}</p>
+          </header>
+
+          <div className="sheet__body">
+            <section className="sheet__abstract">
+              <h4>In short</h4>
+              <p>
+                Instead of fine-tuning every weight of a large model, freeze it and train a pair of small{" "}
+                <mark>low-rank matrices</mark> beside chosen layers. On GPT-3 175B that cuts trainable parameters by
+                about 10,000 times and GPU memory by about 3 times.
+              </p>
+            </section>
+
+            <section>
+              <h4>1&nbsp;&nbsp;The update is low rank</h4>
+              <p>
+                The change a task needs in a weight matrix can be written as the product of two thin matrices, so
+                only those are trained while the original W stays frozen.
+              </p>
+              <p className="sheet__eq" aria-label="h equals W zero x plus B A x">
+                h = W<sub>0</sub>x + <mark>BAx</mark>, &nbsp;rank r ≪ d
+              </p>
+              <span className="sheet__note sheet__note--1" aria-hidden="true">
+                train A and B, freeze W
+              </span>
+            </section>
+
+            <section>
+              <h4>2&nbsp;&nbsp;Starts as a no-op</h4>
+              <p>
+                A starts random and B starts at zero, so at step one the model behaves exactly like the
+                pretrained one; the update is scaled by <mark>α / r</mark>.
+              </p>
+            </section>
+
+            <section>
+              <h4>3&nbsp;&nbsp;No extra latency</h4>
+              <p>
+                After training, BA can be <mark>merged back into W</mark>, so inference runs at the original
+                speed, unlike adapter layers that add depth.
+              </p>
+              <span className="sheet__note sheet__note--2" aria-hidden="true">
+                merge, then ship
+              </span>
+            </section>
+
+            <section>
+              <h4>4&nbsp;&nbsp;Why it matters to my work</h4>
+              <p>
+                FedLearn gives each user a tiny personal adapter built on this idea, about 150 KB, that learns on
+                their device; only <mark>A and B</mark> ever change, never the base model.
+              </p>
+              <span className="sheet__note sheet__note--3" aria-hidden="true">
+                small enough to stay on-device
+              </span>
+            </section>
+          </div>
+
+          <footer className="sheet__foot" aria-hidden="true">
+            <span>arXiv preprint, revised October 2021</span>
             <span>1</span>
           </footer>
         </article>

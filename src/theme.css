@@ -1,0 +1,108 @@
+/* Wine and sand theme. Overrides for places where a straight token swap isn't enough:
+   blend modes that only worked on cobalt, labels that need dark text on amber,
+   and two-tone type that needs more contrast between sand and paper. */
+
+/* The difference-blend trick turns wine into aqua, so the nav becomes a solid wine band. */
+.nav {
+  mix-blend-mode: normal;
+  color: var(--paper);
+  background: var(--wine);
+  border-bottom: 1px solid rgba(245, 235, 208, 0.18);
+}
+
+.nav__progress {
+  background: var(--signal);
+  height: 2px;
+  top: auto;
+  bottom: -1px;
+}
+
+.nav__dot {
+  background: var(--signal);
+}
+
+/* Cursor: amber crosshair instead of a blended white one. */
+.reticle,
+.reticle-dot {
+  mix-blend-mode: normal;
+}
+
+.reticle__corner {
+  border-color: var(--signal);
+}
+
+.reticle-dot {
+  background: var(--signal);
+}
+
+.reticle.is-pressed .reticle__corner {
+  border-color: var(--sand);
+}
+
+/* Labels on amber read in wine, not white. */
+.reticle__label,
+.paper__field::before,
+.statement__photo figcaption,
+.contact__cutout-target span {
+  color: var(--wine);
+}
+
+/* Highlights on wine use amber, since sand is already the body colour. */
+.statement__lit mark {
+  color: var(--signal);
+}
+
+/* Boot target: sand and wine squares, like the reference swatch. */
+.boot__target i {
+  background: var(--wine-3);
+}
+
+.boot__target i:nth-child(odd) {
+  background: var(--sand);
+}
+
+.case__note {
+  background: var(--sand);
+}
+
+.btn-shake {
+  box-shadow: 5px 5px 0 var(--signal);
+}
+
+.cmd__panel {
+  box-shadow: 10px 10px 0 var(--signal);
+}
+
+.contact__email-text {
+  color: var(--sand);
+}
+
+/* Amber is too faint on cream, so stamps and results on light sections print in wine. */
+.stamp,
+.stamp__ink {
+  color: var(--wine);
+  border-color: var(--wine);
+}
+
+.win__result {
+  color: var(--wine-3);
+}
+
+/* Inside the projects window the sky is light, so the cursor switches from amber to black. */
+.cursor-dark .reticle__corner {
+  border-color: #0e0003;
+}
+
+.cursor-dark .reticle-dot {
+  background: #0e0003;
+}
+
+.cursor-dark .reticle__label {
+  background: #0e0003;
+  color: var(--paper);
+}
+
+.cursor-dark .reticle.is-locked .reticle__corner,
+.cursor-dark .reticle.is-pressed .reticle__corner {
+  border-color: #0e0003;
+}

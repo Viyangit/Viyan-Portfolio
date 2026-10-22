@@ -71,17 +71,9 @@ export default function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
-    const onKey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setMenu((m) => !m);
-      }
-    };
-    window.addEventListener("keydown", onKey);
     return () => {
       io.disconnect();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("keydown", onKey);
     };
   }, []);
 
@@ -94,7 +86,17 @@ export default function Nav() {
     <>
       <header className="nav">
         <div ref={barRef} className="nav__progress" aria-hidden="true" />
-        <a href="#top" className="nav__mark" onClick={(e) => go(e, "top")} data-detect="home">
+        <a
+          href="/"
+          className="nav__mark"
+          onClick={(e) => {
+            // A full reload from the top replays the boot and the hero intro.
+            e.preventDefault();
+            window.scrollTo(0, 0);
+            window.location.reload();
+          }}
+          data-detect="home"
+        >
           VM
         </a>
         <Clock />
@@ -113,9 +115,9 @@ export default function Nav() {
               </li>
             ))}
           </ul>
+          {/* Phones only: the section links collapse into this menu. */}
           <button type="button" className="nav__cmd" onClick={() => setMenu(true)} data-detect="menu">
             <span className="nav__cmd-mobile">Menu</span>
-            <kbd className="nav__cmd-key">{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ K" : "Ctrl K"}</kbd>
           </button>
         </nav>
       </header>

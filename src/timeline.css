@@ -1,0 +1,454 @@
+/* Internships: periods on a horizontal 2025 timeline, with parallax layers inside each period. */
+
+.itx {
+  --rail-h: 4.75rem;
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--sand);
+  color: var(--wine);
+}
+
+.itx__track {
+  display: flex;
+  height: calc(100% - var(--rail-h));
+  width: max-content;
+  will-change: transform;
+}
+
+/* ---- A period ---- */
+.per {
+  position: relative;
+  flex: none;
+  width: 100vw;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 6rem);
+  padding: calc(4.5rem + 3vh) var(--gutter) 2vh;
+  overflow: hidden;
+  border-left: 1px solid rgba(127, 1, 31, 0.14);
+}
+
+/* The month the internship began, huge and hollow, drifting slowly behind everything. */
+.per__ghost {
+  position: absolute;
+  right: var(--gutter);
+  bottom: -0.12em;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(14rem, 42vh, 30rem);
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(127, 1, 31, 0.16);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The photo cluster keeps one shape at every screen size: sized by height, never wider than its column. */
+.per__media {
+  position: relative;
+  justify-self: center;
+  width: min(100%, calc(min(64vh, 40rem) * 0.95));
+  aspect-ratio: 0.95;
+}
+
+.per__photo {
+  position: absolute;
+  margin: 0;
+  overflow: hidden;
+  background: var(--wine);
+}
+
+.per__photo--main {
+  inset: 0 18% 8% 0;
+  border-radius: 2px;
+}
+
+.per__photo--inset {
+  right: 0;
+  bottom: 0;
+  width: 38%;
+  aspect-ratio: 4 / 5;
+  box-shadow: 0 0 0 0.6rem var(--sand);
+}
+
+/* The image is wider than its frame, so it can pan as the period passes. */
+.per__photo-inner {
+  position: absolute;
+  inset: 0 -16%;
+}
+
+.per__photo-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.per__placeholder {
+  display: grid;
+  place-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  height: 100%;
+  padding: 0 18%;
+  text-align: center;
+  color: var(--sand);
+  background:
+    repeating-linear-gradient(135deg, rgba(245, 235, 208, 0.06) 0 2px, transparent 2px 14px),
+    var(--wine);
+}
+
+.per__placeholder span {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.per__placeholder b {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1rem, 1.6vw, 1.4rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.per__photo--inset .per__placeholder {
+  background:
+    repeating-linear-gradient(135deg, rgba(245, 235, 208, 0.08) 0 2px, transparent 2px 12px),
+    var(--wine-3);
+}
+
+/* ---- Copy ---- */
+.per__copy {
+  position: relative;
+  max-width: 34rem;
+}
+
+.per__index {
+  margin: 0 0 1rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  opacity: 0.7;
+}
+
+.per__index span {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background: var(--wine);
+  color: var(--sand);
+  opacity: 1;
+}
+
+.per__company {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(3rem, 6.2vw, 6.4rem);
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.per__role {
+  margin: 0.9rem 0 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wine-3);
+}
+
+.per__role span {
+  margin: 0 0.35rem;
+  color: var(--signal);
+}
+
+.per__desc {
+  margin: 0 0 1.4rem;
+  font-size: clamp(1rem, 1.15vw, 1.15rem);
+  line-height: 1.5;
+}
+
+.per__notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem 1.6rem;
+  margin: 0 0 1.4rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(127, 1, 31, 0.2);
+}
+
+.per__notes dt {
+  margin-bottom: 0.25rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wine-3);
+}
+
+.per__notes dd {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.42;
+}
+
+.per__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.per__stack li {
+  padding: 0.25rem 0.65rem;
+  border: 1px solid var(--wine);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+}
+
+/* ---- Intro and outro ---- */
+.per--intro {
+  width: min(88vw, 72rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  border-left: 0;
+  background: var(--wine);
+  color: var(--sand);
+}
+
+.per__kicker {
+  margin: 0 0 1.2rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.per__title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(3.6rem, 9vw, 9rem);
+  line-height: 0.86;
+  text-transform: uppercase;
+}
+
+.per__title em {
+  font-style: normal;
+  color: var(--signal);
+}
+
+.per__lede {
+  position: relative;
+  z-index: 1;
+  max-width: 30rem;
+  margin: 1.6rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.per__year {
+  position: absolute;
+  right: -0.06em;
+  bottom: -0.16em;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(12rem, 46vh, 32rem);
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(245, 235, 208, 0.22);
+  pointer-events: none;
+}
+
+.per--end {
+  width: 40vw;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+/* ---- Rail ---- */
+.per-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--rail-h);
+  padding: 0 var(--gutter);
+  border-top: 1px solid rgba(127, 1, 31, 0.18);
+  background: var(--sand);
+}
+
+.per-rail__line {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  top: -1px;
+  height: 3px;
+}
+
+.per-rail__line i {
+  position: absolute;
+  inset: 0;
+  background: var(--wine);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.per-rail ol {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.per-rail__stop {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.3s;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
+.per-rail__stop b {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.per-rail__stop span {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.per-rail__stop.is-past,
+.per-rail__stop:hover {
+  opacity: 1;
+}
+
+/* ---- Phones: photo on top, copy below; the longer notes stay for larger screens. ---- */
+@media (max-width: 820px) {
+  .per {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    gap: 1.4rem;
+    padding: calc(4.5rem + 1vh) 1.5rem 1vh;
+  }
+
+  .per__media {
+    width: min(100%, calc(34vh * 0.95));
+  }
+
+  .per__notes,
+  .per--end {
+    display: none;
+  }
+
+  .per__company {
+    font-size: clamp(2.4rem, 11vw, 3.4rem);
+  }
+
+  .per__desc {
+    font-size: 0.92rem;
+    margin-bottom: 1rem;
+  }
+
+  .per-rail__stop span {
+    display: none;
+  }
+}
+
+/* Reduced motion: no pin; the periods scroll sideways by hand. */
+@media (prefers-reduced-motion: reduce) {
+  .itx__track {
+    overflow-x: auto;
+    width: 100%;
+  }
+}
+
+/* Extra slots, for periods with more photos: a landscape screenshot card across the top, and a
+   small tilted document card at the bottom left. These sit still; only main and inset pan. */
+.per__photo--wide,
+.per__photo--tag {
+  z-index: 2;
+  background: var(--paper);
+  box-shadow: 0 0 0 0.45rem var(--sand), 0 18px 40px -18px rgba(60, 0, 15, 0.55);
+}
+
+.per__photo--wide {
+  top: -7%;
+  right: -4%;
+  width: 62%;
+  aspect-ratio: 1280 / 569;
+}
+
+.per__photo--tag {
+  left: -5%;
+  bottom: -3%;
+  width: 24%;
+  aspect-ratio: 792 / 1134;
+  rotate: -5deg;
+}
+
+.per__photo--wide .per__photo-inner,
+.per__photo--tag .per__photo-inner {
+  inset: 0;
+}
+
+@media (max-width: 820px) {
+  .per__photo--tag {
+    display: none;
+  }
+}
+
+/* Software screenshots show whole and stay still: panning would crop their text. */
+.per__photo--screen {
+  background: #fff;
+}
+
+.per__photo--screen .per__photo-inner {
+  inset: 0;
+}
+
+.per__photo--screen .per__photo-inner img {
+  object-fit: contain;
+}
+
+/* A photo whose subject sits near an edge: no pan, cropped from its focus point. */
+.per__photo--still .per__photo-inner {
+  inset: 0;
+}

@@ -25,8 +25,8 @@ html.is-locked {
   place-content: center;
   justify-items: center;
   gap: 1.5rem;
-  background: var(--cobalt);
-  color: var(--frost);
+  background: var(--wine);
+  color: var(--paper);
   transition: clip-path 0.7s cubic-bezier(0.77, 0, 0.18, 1);
   clip-path: inset(0 0 0 0);
 }
@@ -44,13 +44,13 @@ html.is-locked {
 }
 
 .boot__target i {
-  background: var(--frost);
+  background: var(--paper);
   opacity: 0;
   animation: boot-cell 0.5s steps(2) forwards;
 }
 
 .boot__target i:nth-child(odd) {
-  background: var(--yellow);
+  background: var(--sand);
 }
 
 @keyframes boot-cell {
@@ -63,7 +63,7 @@ html.is-locked {
   position: absolute;
   width: 1.5rem;
   height: 1.5rem;
-  border: 0 solid var(--coral);
+  border: 0 solid var(--signal);
 }
 .boot__corner--tl { left: -0.75rem; top: -0.75rem; border-left-width: 2px; border-top-width: 2px; }
 .boot__corner--br { right: -0.75rem; bottom: -0.75rem; border-right-width: 2px; border-bottom-width: 2px; }
@@ -75,7 +75,7 @@ html.is-locked {
   gap: 2rem;
   width: min(56vw, 15rem);
   font-size: 0.85rem;
-  color: var(--steel);
+  color: var(--muted);
 }
 
 .boot__num {
@@ -83,19 +83,19 @@ html.is-locked {
   font-weight: 800;
   font-size: 2rem;
   line-height: 1;
-  color: var(--frost);
+  color: var(--paper);
 }
 
 .boot__bar {
   width: min(56vw, 15rem);
   height: 2px;
-  background: rgba(140, 155, 184, 0.3);
+  background: rgba(217, 187, 169, 0.3);
 }
 
 .boot__bar i {
   display: block;
   height: 100%;
-  background: var(--coral);
+  background: var(--signal);
   transform: scaleX(0);
   transform-origin: left;
 }
@@ -170,9 +170,7 @@ html.is-locked {
   .nav__links {
     display: none;
   }
-  .nav__cmd-key {
-    display: none;
-  }
+  
   .nav__cmd-mobile {
     display: inline;
   }
@@ -192,7 +190,7 @@ html.is-locked {
   justify-content: center;
   align-items: flex-start;
   padding: 14vh 1rem 1rem;
-  background: rgba(5, 9, 34, 0.72);
+  background: rgba(40, 0, 10, 0.72);
   backdrop-filter: blur(6px);
   animation: fade-in 0.2s ease-out;
 }
@@ -205,10 +203,10 @@ html.is-locked {
 
 .cmd__panel {
   width: min(36rem, 100%);
-  background: var(--frost);
-  color: var(--cobalt);
-  border: 3px solid var(--cobalt);
-  box-shadow: 10px 10px 0 var(--yellow);
+  background: var(--paper);
+  color: var(--wine);
+  border: 3px solid var(--wine);
+  box-shadow: 10px 10px 0 var(--sand);
   animation: cmd-in 0.35s var(--ease);
 }
 
@@ -223,10 +221,10 @@ html.is-locked {
   width: 100%;
   padding: 1rem 1.1rem;
   border: 0;
-  border-bottom: 2px solid var(--cobalt);
+  border-bottom: 2px solid var(--wine);
   background: transparent;
   font: 500 1.05rem var(--sans);
-  color: var(--cobalt);
+  color: var(--wine);
 }
 
 .cmd__input:focus {
@@ -249,8 +247,8 @@ html.is-locked {
 }
 
 .cmd__item[aria-selected="true"] {
-  background: var(--cobalt);
-  color: var(--frost);
+  background: var(--wine);
+  color: var(--paper);
 }
 
 .cmd__hint {
@@ -269,35 +267,13 @@ html.is-locked {
 
 .cmd__foot {
   padding: 0.6rem 1.1rem;
-  border-top: 1px solid rgba(12, 20, 70, 0.2);
+  border-top: 1px solid rgba(127, 1, 31, 0.2);
   font-size: 0.75rem;
-  color: #4a5677;
+  color: #7a3f48;
 }
 
 /* ------------------------------------------------------------------ */
 /* Crates: case study trigger                                          */
-/* ------------------------------------------------------------------ */
-.crate__body {
-  cursor: pointer;
-}
-
-.crate__open {
-  align-self: flex-start;
-  padding: 0.55rem 0.9rem;
-  background: var(--yellow);
-  color: var(--cobalt);
-  border: 2px solid var(--cobalt);
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  box-shadow: 4px 4px 0 var(--cobalt);
-  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
-}
-
-.crate__open:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--cobalt);
-}
 
 .crate__stack {
   margin-top: auto;
@@ -312,7 +288,7 @@ html.is-locked {
   z-index: 1400;
   display: flex;
   justify-content: flex-end;
-  background: rgba(5, 9, 34, 0.6);
+  background: rgba(40, 0, 10, 0.6);
   animation: fade-in 0.3s ease-out;
 }
 
@@ -333,9 +309,9 @@ html.is-locked {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: clamp(1.5rem, 5vw, 4rem);
-  background: var(--frost);
-  color: var(--cobalt);
-  border-left: 3px solid var(--cobalt);
+  background: var(--paper);
+  color: var(--wine);
+  border-left: 3px solid var(--wine);
   animation: case-in 0.6s var(--ease);
 }
 
@@ -368,8 +344,8 @@ html.is-locked {
   float: right;
   z-index: 2;
   padding: 0.5rem 0.9rem;
-  background: var(--cobalt);
-  color: var(--frost);
+  background: var(--wine);
+  color: var(--paper);
   border: 0;
   font-weight: 600;
   cursor: pointer;
@@ -396,13 +372,13 @@ html.is-locked {
 .case__label {
   width: 13rem;
   padding: 0.7rem;
-  border: 2px solid var(--cobalt);
+  border: 2px solid var(--wine);
 }
 
 .case__label .barcode {
   width: 100%;
   height: 2.5rem;
-  fill: var(--cobalt);
+  fill: var(--wine);
 }
 
 .case__label dl {
@@ -419,7 +395,7 @@ html.is-locked {
 }
 
 .case__label dt {
-  color: #4a5677;
+  color: #7a3f48;
 }
 
 .case__label dd {
@@ -446,7 +422,7 @@ html.is-locked {
 
 .case__grid section {
   padding-top: 0.9rem;
-  border-top: 2px solid var(--cobalt);
+  border-top: 2px solid var(--wine);
 }
 
 .case__grid h3 {
@@ -476,11 +452,11 @@ html.is-locked {
   top: 0.55em;
   width: 0.55rem;
   height: 0.55rem;
-  border: 2px solid var(--coral);
+  border: 2px solid var(--signal);
 }
 
 .case__note {
-  background: var(--yellow);
+  background: var(--sand);
   padding: 1rem !important;
   border-top-color: transparent !important;
 }
@@ -511,8 +487,8 @@ html.is-locked {
 /* ------------------------------------------------------------------ */
 .certs {
   padding: clamp(5rem, 12vh, 8rem) var(--gutter);
-  background: var(--yellow);
-  color: var(--cobalt);
+  background: var(--sand);
+  color: var(--wine);
 }
 
 .certs__head p {
@@ -522,7 +498,7 @@ html.is-locked {
 
 .certs__layout {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.25fr) minmax(0, 0.95fr);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr);
   gap: clamp(1.25rem, 3vw, 2.5rem);
   align-items: start;
   margin-top: clamp(2rem, 5vw, 3.5rem);
@@ -539,8 +515,8 @@ html.is-locked {
   align-items: center;
   gap: 0.8rem;
   padding: 0.75rem;
-  background: var(--frost);
-  border: 2px solid var(--cobalt);
+  background: var(--paper);
+  border: 2px solid var(--wine);
   text-align: left;
   cursor: pointer;
   transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), background 0.25s;
@@ -552,7 +528,7 @@ html.is-locked {
   height: 2.75rem;
   object-fit: contain;
   background: #fff;
-  border: 1px solid rgba(12, 20, 70, 0.15);
+  border: 1px solid rgba(127, 1, 31, 0.15);
 }
 
 .certs__slip strong {
@@ -564,7 +540,7 @@ html.is-locked {
 .certs__slip em {
   font-style: normal;
   font-size: 0.8rem;
-  color: #4a5677;
+  color: #7a3f48;
 }
 
 .certs__slip:hover {
@@ -574,14 +550,14 @@ html.is-locked {
 .certs__slip.is-active {
   transform: translateX(12px);
   background: #fff;
-  box-shadow: -8px 8px 0 var(--cobalt);
+  box-shadow: -8px 8px 0 var(--wine);
 }
 
 .certs__bed {
   position: relative;
   padding: 1.1rem;
-  background: var(--cobalt);
-  border: 3px solid var(--cobalt);
+  background: var(--wine);
+  border: 3px solid var(--wine);
   overflow: hidden;
 }
 
@@ -589,7 +565,7 @@ html.is-locked {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(140, 155, 184, 0.35) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(rgba(217, 187, 169, 0.35) 1.5px, transparent 1.5px);
   background-size: 18px 18px;
 }
 
@@ -600,9 +576,9 @@ html.is-locked {
   gap: 0.45rem;
   padding: 2rem 1.5rem 1.5rem;
   background: #fff;
-  color: var(--cobalt);
+  color: var(--wine);
   text-align: center;
-  box-shadow: 0 0 0 6px #fff, 0 0 0 8px var(--cobalt), 0 0 0 10px #fff;
+  box-shadow: 0 0 0 6px #fff, 0 0 0 8px var(--wine), 0 0 0 10px #fff;
   margin: 10px;
   animation: paper-feed 0.6s var(--ease);
 }
@@ -617,12 +593,12 @@ html.is-locked {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 0.85rem;
   font-style: italic;
-  color: #4a5677;
+  color: #7a3f48;
 }
 
 .paper__small {
   font-size: 0.75rem;
-  color: #4a5677;
+  color: #7a3f48;
 }
 
 .paper__holder {
@@ -651,7 +627,7 @@ html.is-locked {
   width: 100%;
   margin-top: 1.25rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(12, 20, 70, 0.2);
+  border-top: 1px solid rgba(127, 1, 31, 0.2);
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -674,7 +650,7 @@ html.is-locked {
 .paper__field::after {
   content: "";
   inset: -3px;
-  border: 1.5px solid var(--coral);
+  border: 1.5px solid var(--signal);
   transform: scale(1.15);
 }
 
@@ -684,7 +660,7 @@ html.is-locked {
   left: -3px;
   bottom: calc(100% + 3px);
   padding: 1px 4px;
-  background: var(--coral);
+  background: var(--signal);
   color: #fff;
   font: 500 9px/1.3 var(--mono);
   white-space: nowrap;
@@ -707,8 +683,8 @@ html.is-locked {
   right: 0;
   top: 0;
   height: 3px;
-  background: var(--coral);
-  box-shadow: 0 0 22px 6px rgba(255, 90, 54, 0.55);
+  background: var(--signal);
+  box-shadow: 0 0 22px 6px rgba(233, 162, 59, 0.55);
   opacity: 0;
   z-index: 2;
 }
@@ -723,40 +699,73 @@ html.is-locked {
   100% { top: calc(100% - 3px); opacity: 0; }
 }
 
-.certs__out {
-  background: var(--cobalt);
-  color: var(--frost);
-  padding: 1.1rem;
-  min-height: 100%;
-}
-
-.certs__out-title {
-  font-size: 0.85rem;
-  color: var(--steel);
-}
-
-.certs__json {
-  margin: 0.75rem 0 0;
-  font: 400 0.82rem/1.7 var(--mono);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  color: var(--yellow);
-}
-
-.certs__caret {
-  display: inline-block;
-  width: 0.55em;
-  height: 1em;
-  vertical-align: -0.15em;
-  background: var(--yellow);
-  animation: pulse 0.8s steps(1) infinite;
-}
-
 @media (max-width: 1000px) {
   .certs__layout {
     grid-template-columns: minmax(0, 1fr);
   }
   .certs__slip.is-active {
     transform: translateX(6px);
+  }
+}
+
+/* Certificates at every size: the scanner keeps a real certificate's landscape shape and the
+   whole block stays at a readable width, so a large screen doesn't stretch it into a strip. */
+.certs__head,
+.certs__layout {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+.certs__layout {
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  align-items: center;
+}
+
+@media (min-width: 701px) {
+  .paper {
+    aspect-ratio: 1.6;
+    align-content: center;
+  }
+}
+
+@media (max-width: 1000px) {
+  .certs__layout {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 40rem;
+  }
+}
+
+/* Phones: the certificate picks become a row you swipe, so the scanner sits right under them. */
+@media (max-width: 700px) {
+  .certs__tray {
+    display: flex;
+    gap: 0.6rem;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    scroll-snap-type: x mandatory;
+  }
+
+  .certs__tray > * {
+    flex: 0 0 78%;
+    scroll-snap-align: start;
+  }
+
+  .certs__slip.is-active {
+    transform: none;
+  }
+
+  .certs__bed {
+    padding: 0.7rem;
+  }
+
+  .paper {
+    padding: 1.4rem 0.9rem 1.1rem;
+  }
+}
+
+/* The menu button only exists for phones, where the section links collapse into it. */
+@media (min-width: 901px) {
+  .nav__cmd {
+    display: none;
   }
 }

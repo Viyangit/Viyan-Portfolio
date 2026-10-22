@@ -8,6 +8,12 @@ import App from "./App.jsx";
 import "./styles.css";
 import "./features.css";
 import "./reading.css";
+import "./theme.css";
+import "./hero.css";
+import "./ring.css";
+import "./timeline.css";
+import "./motion.css";
+import "./factory.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,7 +24,7 @@ window.scrollTo(0, 0);
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 if (!reduceMotion) {
-  const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+  const lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.9 });
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);

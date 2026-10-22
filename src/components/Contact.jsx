@@ -103,7 +103,7 @@ export default function Contact() {
       </div>
       <div className="contact__cutout">
         <div className="contact__cutout-inner" ref={cutoutRef} style={{ position: "relative", height: "100%" }}>
-          <img src="/uploads/viyan-cutout.webp" alt="Viyan smiling, in a yellow kurta" loading="lazy" />
+          <img src="/uploads/viyan-kurta-cut.webp" alt="Viyan smiling, in a yellow kurta" loading="lazy" />
           <div className="contact__cutout-target" data-detect="viyan, say hi" aria-hidden="true">
             <span>viyan 0.99</span>
           </div>

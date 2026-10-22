@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { bootDone } from "./Boot.jsx";
+import { isLite } from "../lite.js";
 import { HeroInk, NoteList } from "./HeroNotes.jsx";
 
 const CUTOUT = "/uploads/viyan-black-shirt-cut.webp";
@@ -21,7 +22,8 @@ export default function Hero() {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
-        bootDone.then(() => tl.play());
+        // Weak devices (lite mode) get the same entrance, three times faster.
+        bootDone.then(() => tl.timeScale(isLite() ? 3 : 1).play());
         tl.from(".hero__band--top", { scaleY: 0, transformOrigin: "50% 0%", duration: 1.1, ease: "expo.inOut" })
           .from(".hero__first > span", { yPercent: 105, duration: 1.2 }, "-=0.45")
           .from(".hero__last > span", { yPercent: -105, duration: 1.2 }, "<0.08")
@@ -99,7 +101,7 @@ export default function Hero() {
         <HeroInk stageRef={stageRef} />
 
         <figure className="hero__figure" data-depth="6">
-          <img src={CUTOUT} alt="Viyan Manokaran in a black shirt and sunglasses, smiling" />
+          <img src={CUTOUT} alt="Viyan Manokaran in a black shirt and sunglasses, smiling" fetchpriority="high" decoding="async" />
         </figure>
         <NoteList />
 

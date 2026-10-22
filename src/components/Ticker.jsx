@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { scrollVelocity } from "../motion.js";
+import { isLite, onLite } from "../lite.js";
 
 const ROWS = [
   { words: ["AI engineer", "Computer vision", "LLM systems", "Federated learning", "Full stack", "Shop-floor software"] },
@@ -22,7 +23,7 @@ export default function Ticker() {
     const rows = [...ref.current.querySelectorAll(".ticker__row")];
     const state = rows.map(() => ({ x: 0 }));
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return undefined;
+    if (reduce || isLite()) return undefined;
 
     let visible = false;
     const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
@@ -45,7 +46,10 @@ export default function Ticker() {
       });
     };
     gsap.ticker.add(tick);
+    // Lite mode: the bands stop where they are.
+    const offLite = onLite(() => gsap.ticker.remove(tick));
     return () => {
+      offLite();
       io.disconnect();
       gsap.ticker.remove(tick);
     };

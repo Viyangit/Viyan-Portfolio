@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { isLite, onLite } from "../lite.js";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { PROJECTS, INTERNSHIPS, WINS } from "../data.js";
@@ -188,7 +189,7 @@ export default function ProjectRing() {
       if (!s.dragging) s.spin *= Math.pow(0.9, d);
       const c = cam.current;
       const m = smooth(Math.max(0, Math.min(1, c.morph)));
-      const sway = reduce || c.done < 1 ? 0 : Math.sin(time * 0.45) * 5;
+      const sway = reduce || isLite() || c.done < 1 ? 0 : Math.sin(time * 0.45) * 5;
       const arcRot = s.spin + s.scroll + sway;
 
       ring.style.transform = `translateZ(${-c.dist * Ra}px)`;
@@ -212,6 +213,13 @@ export default function ProjectRing() {
       });
     };
     gsap.ticker.add(tick);
+    // Lite mode: skip the circling entrance and settle on a flatter arc that only moves when you drag.
+    const offLite = onLite(() => {
+      gsap.killTweensOf(cam.current);
+      gsap.killTweensOf(pops.current);
+      Object.assign(cam.current, FINAL, { pf: 1.6 });
+      pops.current.forEach((p) => (p.v = 1));
+    });
 
     // Drag to push the arc, springing back on release.
     let lastX = 0;
@@ -248,6 +256,7 @@ export default function ProjectRing() {
     win.addEventListener("pointercancel", onUp);
 
     return () => {
+      offLite();
       ro.disconnect();
       io.disconnect();
       gsap.ticker.remove(tick);

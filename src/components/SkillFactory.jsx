@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { SKILLS, SKILL_GROUPS } from "../data.js";
 import * as F from "./factory/scene.js";
 import "./factory/kit/iso.css";
+import { isLite, onLite } from "../lite.js";
 
 const GROUP_KEYS = ["ai", "code", "tools"];
 const SHORT = { ai: "AI · DATA", code: "CODE", tools: "TOOLS" };
@@ -108,8 +109,8 @@ export default function SkillFactory() {
       pushers.forEach((p, i) => (p.innerHTML = F.pusherSvg(F.LANES[i], F.HEAD_REST, false)));
     };
 
-    // Reduced motion: every tile already in its crate.
-    if (reduce) {
+    // Reduced motion and lite mode: every tile already in its crate, nothing moving.
+    const showSorted = () => {
       reset();
       svg.setAttribute("viewBox", `0 0 ${F.WIDTH} ${F.HEIGHT}`);
       setZoomed(false);
@@ -124,6 +125,9 @@ export default function SkillFactory() {
       sim.crates.forEach((c, i) => sortLayer(crateTiles[i], c));
       setLanded(new Set(order.map((s) => s.name)));
       setReadout(`${SKILLS.length} / ${SKILLS.length} sorted`);
+    };
+    if (reduce || isLite()) {
+      showSorted();
       return undefined;
     }
 
@@ -305,7 +309,15 @@ export default function SkillFactory() {
       { threshold: 0.15 }
     );
     io.observe(stageRef.current);
+    const offLite = onLite(() => {
+      io.disconnect();
+      gsap.ticker.remove(tick);
+      running = false;
+      gsap.killTweensOf(crateTiles.flatMap((g) => [...g.children]));
+      showSorted();
+    });
     return () => {
+      offLite();
       io.disconnect();
       gsap.ticker.remove(tick);
     };

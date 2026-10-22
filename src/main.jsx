@@ -5,6 +5,7 @@ import "lenis/dist/lenis.css";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import App from "./App.jsx";
+import { initLite, isLite, onLite } from "./lite.js";
 import "./styles.css";
 import "./features.css";
 import "./reading.css";
@@ -22,13 +23,22 @@ if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 window.scrollTo(0, 0);
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+initLite();
 
-if (!reduceMotion) {
+// Smooth scrolling, except on weak devices (lite mode), where native scrolling is lighter.
+if (!reduceMotion && !isLite()) {
   const lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.9 });
   lenis.on("scroll", ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
+  const raf = (time) => lenis.raf(time * 1000);
+  gsap.ticker.add(raf);
   gsap.ticker.lagSmoothing(0);
   window.__lenis = lenis;
+  onLite(() => {
+    gsap.ticker.remove(raf);
+    lenis.destroy();
+    window.__lenis = null;
+    ScrollTrigger.refresh();
+  });
 }
 
 createRoot(document.getElementById("root")).render(<App />);

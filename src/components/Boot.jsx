@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { isLite } from "../lite.js";
 
 let resolveBoot;
 /** Resolves when the intro loader starts leaving, so the hero can play its entrance after it. */
 export const bootDone = new Promise((r) => (resolveBoot = r));
 
 const DURATION = 1300;
+const DURATION_LITE = 400; // weak devices get to the content sooner
 
 /** Intro loader styled as a camera calibration pass over a checkerboard target. */
 export default function Boot() {
@@ -23,7 +25,7 @@ export default function Boot() {
     const t0 = performance.now();
     let raf;
     const tick = (now) => {
-      const p = Math.min(1, (now - t0) / DURATION);
+      const p = Math.min(1, (now - t0) / (isLite() ? DURATION_LITE : DURATION));
       const eased = 1 - Math.pow(1 - p, 3);
       if (numRef.current) numRef.current.textContent = String(Math.round(eased * 100)).padStart(3, "0");
       if (barRef.current) barRef.current.style.transform = `scaleX(${eased})`;

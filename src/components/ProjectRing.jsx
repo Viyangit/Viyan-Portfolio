@@ -125,6 +125,60 @@ export default function ProjectRing() {
   const sectionRef = useRef(null);
   const windowRef = useRef(null);
   const ringRef = useRef(null);
+  const rowRef = useRef(null);
+
+  // Phones: the flat row drifts slowly to the end and back. Touching it hands control to the
+  // finger; the drift picks up again a few seconds after you let go.
+  useEffect(() => {
+    const row = rowRef.current;
+    if (!window.matchMedia("(max-width: 820px)").matches) return undefined;
+    // The ring's animation, which fades the sky and words in, doesn't run on phones.
+    windowRef.current.style.setProperty("--sky", "1");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    let dir = 1;
+    let pos = 0;
+    let holdUntil = 0;
+    let visible = false;
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+    io.observe(row);
+    // Snapping helps a finger swipe land on a card, but it would pull the slow drift back each
+    // frame, so it is only on while the row is being touched.
+    const hold = () => {
+      holdUntil = performance.now() + 3500;
+      row.style.scrollSnapType = "x proximity";
+      pos = row.scrollLeft;
+    };
+    row.addEventListener("pointerdown", hold);
+    row.addEventListener("touchstart", hold, { passive: true });
+    row.addEventListener("scroll", () => {
+      if (performance.now() < holdUntil) pos = row.scrollLeft;
+    }, { passive: true });
+    const tick = (time, dt) => {
+      if (!visible || frozen.current || performance.now() < holdUntil) return;
+      if (row.style.scrollSnapType !== "none") {
+        row.style.scrollSnapType = "none";
+        pos = row.scrollLeft;
+      }
+      const max = row.scrollWidth - row.clientWidth;
+      if (max <= 0) return;
+      pos += dir * 0.45 * (Math.min(dt, 50) / 16.67);
+      if (pos >= max) {
+        pos = max;
+        dir = -1;
+      } else if (pos <= 0) {
+        pos = 0;
+        dir = 1;
+      }
+      row.scrollLeft = pos;
+    };
+    gsap.ticker.add(tick);
+    return () => {
+      io.disconnect();
+      gsap.ticker.remove(tick);
+      row.removeEventListener("pointerdown", hold);
+      row.removeEventListener("touchstart", hold);
+    };
+  }, []);
   const [opened, setOpened] = useState(null);
   // While a case study is open the ring holds still, so nothing flickers behind the panel.
   const frozen = useRef(false);
@@ -186,7 +240,7 @@ export default function ProjectRing() {
     const SWEEP_PERIOD = 34; // seconds for one full left-to-right-and-back; slow enough to read each card
     let sweepT = 0;
     const tick = (time, dt) => {
-      if (!visible || frozen.current) return;
+      if (!visible || frozen.current || phone) return;
       const d = Math.min(dt, 50) / 16.67;
       // Dragging pushes the arc aside; let go and it springs back to centre.
       if (!s.dragging) s.spin *= Math.pow(0.9, d);
@@ -387,6 +441,25 @@ export default function ProjectRing() {
             </ul>
           </div>
         </div>
+        {/* Phones: a flat row you swipe, which glides on its own. Plain buttons, so taps always land. */}
+        <ul ref={rowRef} className="pring__row" aria-label="Projects">
+          {PROJECTS.map((p, i) => (
+            <li key={p.name} className={`pcard pcard--flat pcard--${TONES[i % TONES.length]}`}>
+              <button
+                type="button"
+                className="pcard__face pcard__btn"
+                onClick={(e) => {
+                  openerRef.current = e.currentTarget;
+                  setOpened(i);
+                }}
+                aria-label={`${p.name}: open case study`}
+                data-detect={p.name.toLowerCase()}
+              >
+                <CardFace project={p} />
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="pring__foot">

@@ -182,6 +182,9 @@ export default function ProjectRing() {
     };
     const smooth = (t) => t * t * (3 - 2 * t);
 
+    const phone = window.matchMedia("(max-width: 820px)").matches;
+    const SWEEP_PERIOD = 16; // seconds for one full left-to-right-and-back
+    let sweepT = 0;
     const tick = (time, dt) => {
       if (!visible || frozen.current) return;
       const d = Math.min(dt, 50) / 16.67;
@@ -190,7 +193,14 @@ export default function ProjectRing() {
       const c = cam.current;
       const m = smooth(Math.max(0, Math.min(1, c.morph)));
       const sway = reduce || isLite() || c.done < 1 ? 0 : Math.sin(time * 0.45) * 5;
-      const arcRot = s.spin + s.scroll + sway;
+      // Phones: no pinning; once the arc has settled, it glides left to right on its own, slowing and
+      // reversing at each end, so every card passes the centre.
+      let sweep = 0;
+      if (phone && !reduce && c.done >= 1) {
+        sweepT += Math.min(dt, 50) / 1000;
+        sweep = Math.sin((sweepT / SWEEP_PERIOD) * Math.PI * 2) * ((unique - 1) / 2) * arcStep;
+      }
+      const arcRot = s.spin + s.scroll + (phone ? 0 : sway) + sweep;
 
       ring.style.transform = `translateZ(${-c.dist * Ra}px)`;
       tiltRef.current.style.transform = `translate(${c.x}%, ${c.y}%) rotateX(${-c.tiltX}deg) rotateZ(${c.tiltZ}deg)`;
@@ -275,17 +285,20 @@ export default function ProjectRing() {
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        ScrollTrigger.create({
-          trigger: sectionRef.current,
-          start: "top top",
-          end: "+=120%",
-          pin: true,
-          scrub: true,
-          onUpdate: (self) => {
-            // Scrolling swings the arc out and back, never far enough to show empty space.
-            state.current.scroll = Math.sin(self.progress * Math.PI * 2) * 18;
-          },
-        });
+        // Larger screens pin the section and scrolling swings the arc out and back. Phones scroll
+        // straight past; the arc sweeps on its own there instead.
+        if (!window.matchMedia("(max-width: 820px)").matches) {
+          ScrollTrigger.create({
+            trigger: sectionRef.current,
+            start: "top top",
+            end: "+=120%",
+            pin: true,
+            scrub: true,
+            onUpdate: (self) => {
+              state.current.scroll = Math.sin(self.progress * Math.PI * 2) * 18;
+            },
+          });
+        }
         // Entrance: all cards pop in round a diagonal ring that circles, the sky fades in, then the
         // ring rolls level while the duplicates fade and the six originals settle into the arc.
         Object.assign(cam.current, START);

@@ -467,3 +467,14 @@
 .per__photo--still .per__photo-inner {
   inset: 0;
 }
+
+/* Phones: the month sits up behind the photo cluster instead of under the copy. */
+@media (max-width: 820px) {
+  .per__ghost {
+    right: auto;
+    left: 0.5rem;
+    bottom: auto;
+    top: calc(4.5rem + 1vh);
+    font-size: 34svh;
+  }
+}

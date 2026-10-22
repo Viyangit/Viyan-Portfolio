@@ -329,10 +329,32 @@ export default function ProjectRing() {
     return () => ctx.revert();
   }, []);
 
+  // Browsers (Safari above all) can hit-test angled 3D cards wrongly, so a tap on a side card may
+  // reach the centre one. For pointer taps, pick the visible card whose on-screen box is under the
+  // pointer, nearest its middle when boxes overlap. Keyboard activation keeps the focused card.
+  const cardAt = (x, y) => {
+    let best = null;
+    let bestD = Infinity;
+    ringRef.current.querySelectorAll(".pcard").forEach((li, k) => {
+      if (k >= PROJECTS.length || li.style.visibility === "hidden" || Number(li.style.opacity) < 0.5) return;
+      const r = li.querySelector(".pcard__face").getBoundingClientRect();
+      // A card swung behind the camera projects to a huge box; it can't be the one tapped.
+      if (r.width > window.innerWidth) return;
+      if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+      const d = Math.abs(x - (r.left + r.right) / 2);
+      if (d < bestD) {
+        bestD = d;
+        best = k;
+      }
+    });
+    return best;
+  };
+
   const open = (i, e) => {
     if (state.current.moved > 6) return; // a drag, not a click
+    const picked = e.detail > 0 ? cardAt(e.clientX, e.clientY) : null;
     openerRef.current = e.currentTarget;
-    setOpened(i);
+    setOpened(picked ?? i);
   };
 
   const wins = WINS.find((w) => w.stamp === "1st place");

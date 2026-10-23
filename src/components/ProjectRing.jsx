@@ -7,6 +7,9 @@ import CaseStudy from "./CaseStudy.jsx";
 import Barcode from "./Barcode.jsx";
 
 const REPEAT = 3; // the ring phase shows every project three times; the arc keeps one of each
+// Touch screens (phones and tablets) get the flat card row: 3D hit-testing is unreliable under a finger.
+const FLAT_QUERY = "(max-width: 820px), (pointer: coarse)";
+
 const TONES = ["deep", "wine", "sand", "paper", "wine", "sand"];
 
 /** Small motif per project, so each poster reads at a glance even when it's far away. */
@@ -131,7 +134,7 @@ export default function ProjectRing() {
   // finger; the drift picks up again a few seconds after you let go.
   useEffect(() => {
     const row = rowRef.current;
-    if (!window.matchMedia("(max-width: 820px)").matches) return undefined;
+    if (!window.matchMedia(FLAT_QUERY).matches) return undefined;
     // The ring's animation, which fades the sky and words in, doesn't run on phones.
     windowRef.current.style.setProperty("--sky", "1");
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
@@ -236,7 +239,7 @@ export default function ProjectRing() {
     };
     const smooth = (t) => t * t * (3 - 2 * t);
 
-    const phone = window.matchMedia("(max-width: 820px)").matches;
+    const phone = window.matchMedia(FLAT_QUERY).matches;
     const SWEEP_PERIOD = 34; // seconds for one full left-to-right-and-back; slow enough to read each card
     let sweepT = 0;
     const tick = (time, dt) => {
@@ -341,7 +344,7 @@ export default function ProjectRing() {
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         // Larger screens pin the section and scrolling swings the arc out and back. Phones scroll
         // straight past; the arc sweeps on its own there instead.
-        if (!window.matchMedia("(max-width: 820px)").matches) {
+        if (!window.matchMedia(FLAT_QUERY).matches) {
           ScrollTrigger.create({
             trigger: sectionRef.current,
             start: "top top",
@@ -420,6 +423,10 @@ export default function ProjectRing() {
         {/* Display words framing the cards: hollow above, solid below. */}
         <FitWord className="pring__word pring__word--top" text="Selected" hollow />
         <FitWord className="pring__word pring__word--bottom" text="Projects" />
+        <p className="pring__tap" aria-hidden="true">
+          <span className="pring__tap-mouse">Click a card to view details</span>
+          <span className="pring__tap-touch">Tap a card to view details</span>
+        </p>
         <div ref={tiltRef} className="pring__tilt">
           <div className="pring__stage">
             <ul ref={ringRef} className="pring__ring" aria-label="Projects">

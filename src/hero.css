@@ -311,3 +311,11 @@ main {
 .hero__arrow--dark path {
   stroke: var(--wine);
 }
+
+/* Touch screens: no sticky curtain. The hero scrolls away normally, so it can never show through a
+   gap while a pinned section below locks into place. */
+@media (max-width: 820px), (pointer: coarse) {
+  .hero {
+    position: relative;
+  }
+}

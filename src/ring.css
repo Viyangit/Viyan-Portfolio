@@ -503,10 +503,11 @@
 
 @media (max-width: 820px) {
   .pring__tap {
-    top: auto;
-    bottom: 0.8rem;
+    top: 0.7rem;
     right: 50%;
     transform: translateX(50%);
     white-space: nowrap;
+    font-size: 0.66rem;
+    letter-spacing: 0;
   }
 }

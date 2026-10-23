@@ -17,6 +17,9 @@ import "./motion.css";
 import "./factory.css";
 
 gsap.registerPlugin(ScrollTrigger);
+// iOS shows and hides its address bar while scrolling, which resizes the window; re-measuring the
+// pinned sections each time makes them jump. Only real resizes (rotation, width changes) re-measure.
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 // Pinned sections are measured from the top; restoring a mid-page scroll on reload breaks the intro.
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
